@@ -15,48 +15,59 @@ const seasonDates = document.getElementById("seasonDates");
 const currentYear = document.getElementById("currentYear");
 const versionInfo = document.getElementById("versionInfo");
 
+// Theme Toggle Elements
+const lightBulb = document.querySelector(".light-bulb");
+const pullChain = document.querySelector(".pull-chain");
+const themeToggle = document.getElementById("themeToggle");
+const toggleSwitch = document.querySelector(".toggle-switch");
+
 // App Configuration
 const CONFIG = {
-  VERSION: "1.0.0",
+  VERSION: "1.1.0",
   UPDATE_INTERVAL: 1000,
   PERFORMANCE: {
     THROTTLE_ANIMATIONS: true,
     ANIMATION_DURATION: 800,
   },
+  THEME: {
+    DARK: "dark",
+    LIGHT: "light",
+    STORAGE_KEY: "yearProgressTheme",
+  },
   SEASONS: {
     northern: {
       spring: {
         name: "Spring",
-        startMonth: 2, // March (1-based: 3)
+        startMonth: 2,
         startDay: 20,
-        endMonth: 5, // June (1-based: 6)
+        endMonth: 5,
         endDay: 20,
         icon: "fas fa-seedling",
         color: "#4ade80",
       },
       summer: {
         name: "Summer",
-        startMonth: 5, // June
+        startMonth: 5,
         startDay: 21,
-        endMonth: 8, // September
+        endMonth: 8,
         endDay: 22,
         icon: "fas fa-sun",
         color: "#fbbf24",
       },
       autumn: {
         name: "Autumn",
-        startMonth: 8, // September
+        startMonth: 8,
         startDay: 23,
-        endMonth: 11, // December
+        endMonth: 11,
         endDay: 21,
         icon: "fas fa-leaf",
         color: "#f97316",
       },
       winter: {
         name: "Winter",
-        startMonth: 11, // December
+        startMonth: 11,
         startDay: 22,
-        endMonth: 1, // February
+        endMonth: 1,
         endDay: 19,
         icon: "fas fa-snowflake",
         color: "#60a5fa",
@@ -102,6 +113,121 @@ const CONFIG = {
     },
   },
 };
+
+// Theme Management
+class ThemeManager {
+  constructor() {
+    this.currentTheme = this.getPreferredTheme();
+    this.init();
+  }
+
+  getPreferredTheme() {
+    const savedTheme = localStorage.getItem(CONFIG.THEME.STORAGE_KEY);
+    if (savedTheme) {
+      return savedTheme;
+    }
+
+    // Check system preference
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? CONFIG.THEME.DARK
+      : CONFIG.THEME.LIGHT;
+  }
+
+  init() {
+    // Apply initial theme
+    this.setTheme(this.currentTheme);
+
+    // Set up event listeners
+    this.setupEventListeners();
+
+    // Watch for system theme changes
+    this.watchSystemTheme();
+  }
+
+  setTheme(theme) {
+    this.currentTheme = theme;
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem(CONFIG.THEME.STORAGE_KEY, theme);
+
+    // Update UI elements
+    this.updateUI(theme === CONFIG.THEME.DARK);
+  }
+
+  toggleTheme() {
+    const newTheme =
+      this.currentTheme === CONFIG.THEME.DARK
+        ? CONFIG.THEME.LIGHT
+        : CONFIG.THEME.DARK;
+    this.setTheme(newTheme);
+
+    // Trigger pull chain animation
+    this.triggerPullChainAnimation();
+
+    return newTheme;
+  }
+
+  updateUI(isDark) {
+    // Update light bulb
+    if (lightBulb) {
+      if (isDark) {
+        lightBulb.classList.remove("on");
+      } else {
+        lightBulb.classList.add("on");
+      }
+    }
+
+    // Update toggle switch
+    if (themeToggle) {
+      themeToggle.checked = !isDark;
+    }
+  }
+
+  triggerPullChainAnimation() {
+    if (pullChain) {
+      pullChain.classList.add("pulling");
+      setTimeout(() => {
+        pullChain.classList.remove("pulling");
+      }, 500);
+    }
+  }
+
+  setupEventListeners() {
+    // Light bulb click
+    if (lightBulb) {
+      lightBulb.addEventListener("click", () => {
+        this.toggleTheme();
+      });
+    }
+
+    // Pull chain click
+    if (pullChain) {
+      pullChain.addEventListener("click", () => {
+        this.toggleTheme();
+      });
+    }
+
+    // Toggle switch change
+    if (themeToggle) {
+      themeToggle.addEventListener("change", () => {
+        this.toggleTheme();
+      });
+    }
+  }
+
+  watchSystemTheme() {
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+    mediaQuery.addEventListener("change", (e) => {
+      // Only update if user hasn't set a preference
+      if (!localStorage.getItem(CONFIG.THEME.STORAGE_KEY)) {
+        this.setTheme(e.matches ? CONFIG.THEME.DARK : CONFIG.THEME.LIGHT);
+      }
+    });
+  }
+}
+
+// Initialize Theme Manager
+let themeManager;
 
 // Utility Functions
 function formatDate(date) {
@@ -154,11 +280,10 @@ function calculateProgress(currentDate) {
 }
 
 function getCurrentSeason(date, hemisphere = "northern") {
-  const month = date.getMonth() + 1; // Convert to 1-based
+  const month = date.getMonth() + 1;
   const day = date.getDate();
   const seasons = CONFIG.SEASONS[hemisphere];
 
-  // Check each season
   for (const season of Object.values(seasons)) {
     const startDate = new Date(
       date.getFullYear(),
@@ -171,7 +296,6 @@ function getCurrentSeason(date, hemisphere = "northern") {
       season.endDay,
     );
 
-    // Handle year wrap-around for winter
     if (season.startMonth > season.endMonth) {
       if (month >= season.startMonth || month <= season.endMonth) {
         if (month === season.startMonth && day < season.startDay) {
@@ -200,31 +324,25 @@ function getCurrentSeason(date, hemisphere = "northern") {
 
 // Performance Optimized Update Functions
 let lastProgressUpdate = 0;
-const PROGRESS_UPDATE_THROTTLE = 5000; // Update detailed progress every 5 seconds
+const PROGRESS_UPDATE_THROTTLE = 5000;
 
 function updateDateTime() {
   const now = new Date();
   const timestamp = now.getTime();
 
-  // Update date and time displays
   dateDisplay.textContent = formatDate(now);
   timeDisplay.textContent = formatTime(now);
 
-  // Calculate progress
   const progressData = calculateProgress(now);
 
-  // Update year label
   yearLabel.textContent = progressData.year;
 
-  // Update percentage displays
   const formattedProgress = progressData.progress.toFixed(2);
   percentageDisplay.textContent = `${formattedProgress}%`;
   percentText.textContent = `${formattedProgress}%`;
 
-  // Update progress bar width
   progressBar.style.width = `${progressData.progress}%`;
 
-  // Throttle detailed updates for better performance
   if (timestamp - lastProgressUpdate > PROGRESS_UPDATE_THROTTLE) {
     dayOfYear.textContent = progressData.dayOfYear;
     daysRemaining.textContent = progressData.daysRemaining;
@@ -232,10 +350,7 @@ function updateDateTime() {
     lastProgressUpdate = timestamp;
   }
 
-  // Update season (only if changed or first load)
   updateSeason(now);
-
-  // Update footer year
   currentYear.textContent = progressData.year;
 }
 
@@ -243,33 +358,25 @@ function updateSeason(date) {
   const hemisphere = seasonDropdown.value;
   const season = getCurrentSeason(date, hemisphere);
 
-  // Update season name with color
   seasonName.textContent = season.name;
   seasonName.style.color = season.color;
 
-  // CORRECTED: Convert 1-based to 0-based for month names
   const startMonthName = getMonthName(season.startMonth - 1);
   const endMonthName = getMonthName(season.endMonth - 1);
   seasonDates.textContent = `${startMonthName} ${season.startDay} - ${endMonthName} ${season.endDay}`;
 
-  // Update season icon safely using classList
   const seasonIcon = document.querySelector(".season-icon i");
   if (seasonIcon) {
-    // Remove previous season icon classes
     seasonIcon.classList.remove(
       "fa-sun",
       "fa-snowflake",
       "fa-seedling",
       "fa-leaf",
     );
-
-    // Add new icon classes
     const iconClasses = season.icon.split(" ");
     iconClasses.forEach((cls) => {
       if (cls) seasonIcon.classList.add(cls);
     });
-
-    // Update icon color
     seasonIcon.style.color = season.color;
   }
 }
@@ -292,74 +399,105 @@ function getMonthName(monthIndex) {
   return months[monthIndex];
 }
 
+// Create Particle Background
+function createParticles() {
+  const particlesContainer = document.createElement("div");
+  particlesContainer.className = "particles";
+  document.body.prepend(particlesContainer);
+
+  const particleCount = 50;
+
+  for (let i = 0; i < particleCount; i++) {
+    const particle = document.createElement("div");
+    particle.className = "particle";
+
+    // Random properties
+    const size = Math.random() * 2 + 1;
+    const x = Math.random() * 100;
+    const delay = Math.random() * 20;
+    const duration = Math.random() * 10 + 20;
+
+    particle.style.width = `${size}px`;
+    particle.style.height = `${size}px`;
+    particle.style.left = `${x}vw`;
+    particle.style.animationDelay = `${delay}s`;
+    particle.style.animationDuration = `${duration}s`;
+    particle.style.opacity = Math.random() * 0.5 + 0.1;
+
+    // Color based on theme
+    const isDark = themeManager?.currentTheme === CONFIG.THEME.DARK;
+    particle.style.background = isDark
+      ? "rgba(76, 201, 240, 0.3)"
+      : "rgba(67, 97, 238, 0.2)";
+
+    particlesContainer.appendChild(particle);
+  }
+}
+
+// Toggle Switch Animation
+function animateToggleSwitch() {
+  setTimeout(() => {
+    toggleSwitch.classList.add("visible");
+  }, 1000);
+}
+
 // Initialize App
 function init() {
   console.log(`Year Progress Tracker v${CONFIG.VERSION} initializing...`);
 
+  // Initialize theme manager
+  themeManager = new ThemeManager();
+
   // Set version info
   versionInfo.textContent = `v${CONFIG.VERSION}`;
 
-  // Set initial year in progress text
+  // Create particle background
+  createParticles();
+
+  // Set initial progress text
   const now = new Date();
   const initialProgress = calculateProgress(now);
 
-  // Set up performance optimized updates
+  const staticText = document.createElement("span");
+  staticText.textContent = `${initialProgress.year} is `;
+
+  progressText.textContent = "";
+  progressText.appendChild(staticText);
+  progressText.appendChild(document.createTextNode(" complete"));
+
+  // Set up updates
   const updateInterval = setInterval(updateDateTime, CONFIG.UPDATE_INTERVAL);
 
-  // Set up event listeners with debouncing
+  // Event listeners
   seasonDropdown.addEventListener("change", () => {
     updateDateTime();
   });
 
-  // Configure smooth animations
+  // Configure animations
   progressBar.style.transition = `width ${CONFIG.PERFORMANCE.ANIMATION_DURATION}ms cubic-bezier(0.34, 1.56, 0.64, 1)`;
+
+  // Animate toggle switch
+  animateToggleSwitch();
 
   // Initial update
   updateDateTime();
 
-  // Performance monitoring (dev only)
-  if (process.env.NODE_ENV === "development") {
-    monitorPerformance();
-  }
-
   console.log("App initialized successfully");
 
-  // Return cleanup function
   return () => clearInterval(updateInterval);
-}
-
-// Performance monitoring utility
-function monitorPerformance() {
-  let updateCount = 0;
-  const startTime = performance.now();
-
-  const originalUpdate = updateDateTime;
-  updateDateTime = function () {
-    const before = performance.now();
-    originalUpdate();
-    const after = performance.now();
-
-    updateCount++;
-    if (updateCount % 60 === 0) {
-      // Log every minute
-      console.log(`Avg update time: ${(after - before).toFixed(2)}ms`);
-    }
-  };
 }
 
 // Service Worker Registration
 function registerServiceWorker() {
-  if ("serviceWorker" in navigator) {
+  if (
+    "serviceWorker" in navigator &&
+    (window.location.protocol === "https:" ||
+      window.location.hostname === "localhost")
+  ) {
     navigator.serviceWorker
       .register("/service-worker.js")
       .then((registration) => {
         console.log("ServiceWorker registered:", registration);
-
-        // Check for updates
-        registration.addEventListener("updatefound", () => {
-          const newWorker = registration.installing;
-          console.log("ServiceWorker update found:", newWorker);
-        });
       })
       .catch((error) => {
         console.error("ServiceWorker registration failed:", error);
@@ -367,18 +505,10 @@ function registerServiceWorker() {
   }
 }
 
-// Start the app when DOM is loaded
+// Start the app
 document.addEventListener("DOMContentLoaded", () => {
   const cleanup = init();
+  registerServiceWorker();
 
-  // Register service worker
-  if (
-    window.location.protocol === "https:" ||
-    window.location.hostname === "localhost"
-  ) {
-    registerServiceWorker();
-  }
-
-  // Cleanup on page unload
   window.addEventListener("beforeunload", cleanup);
 });
