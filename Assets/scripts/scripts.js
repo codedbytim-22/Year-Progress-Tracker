@@ -588,8 +588,14 @@ function init() {
   // Initial update
   updateDateTime();
 
-  // Performance monitoring
-  if (process.env.NODE_ENV === "development") {
+  // Performance monitoring - FIXED: Remove Node.js syntax
+  // Check if we're in development mode via URL
+  const isDevelopment =
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1" ||
+    window.location.protocol === "file:";
+
+  if (isDevelopment) {
     setupPerformanceMonitoring();
   }
 
@@ -684,15 +690,16 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Export for testing if needed
-if (typeof module !== "undefined" && module.exports) {
-  module.exports = {
-    calculateProgress,
-    formatDate,
-    formatTime,
-    ThemeManager,
-    BackgroundSystem,
-  };
-}
+// Remove Node.js export since this runs in browser
+// if (typeof module !== "undefined" && module.exports) {
+//   module.exports = {
+//     calculateProgress,
+//     formatDate,
+//     formatTime,
+//     ThemeManager,
+//     BackgroundSystem,
+//   };
+// }
 
 // ============================================
 // DAILY STREAK SYSTEM
@@ -716,13 +723,18 @@ class DailyStreak {
     try {
       const saved = localStorage.getItem(this.storageKey);
       return saved ? JSON.parse(saved) : defaultData;
-    } catch {
+    } catch (e) {
+      console.error("Error loading streak data:", e);
       return defaultData;
     }
   }
 
   saveData() {
-    localStorage.setItem(this.storageKey, JSON.stringify(this.data));
+    try {
+      localStorage.setItem(this.storageKey, JSON.stringify(this.data));
+    } catch (e) {
+      console.error("Error saving streak data:", e);
+    }
   }
 
   init() {
@@ -798,19 +810,35 @@ class DailyStreak {
 
   setupCheckInButton() {
     const button = document.getElementById("checkInButton");
-    if (!button) return;
+    if (!button) {
+      console.error("Check-in button not found!");
+      return;
+    }
 
     button.addEventListener("click", () => {
       this.checkIn();
     });
+
+    console.log("Check-in button setup complete");
   }
 
   checkIn() {
+    console.log("Check-in clicked!");
+
     const today = new Date();
     const todayStr = this.formatDate(today);
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayStr = this.formatDate(yesterday);
+
+    console.log(
+      "Today:",
+      todayStr,
+      "Yesterday:",
+      yesterdayStr,
+      "Last check-in:",
+      this.data.lastCheckIn,
+    );
 
     // Check if already checked in today
     if (this.data.checkIns[todayStr]) {
@@ -852,25 +880,28 @@ class DailyStreak {
 
     // Button animation
     const button = document.getElementById("checkInButton");
-    button.innerHTML = '<i class="fas fa-check-circle"></i> Checked In!';
-    button.style.background = "linear-gradient(135deg, #40c463, #30a14e)";
-    button.disabled = true;
+    if (button) {
+      button.innerHTML = '<i class="fas fa-check-circle"></i> Checked In!';
+      button.style.background = "linear-gradient(135deg, #40c463, #30a14e)";
+      button.disabled = true;
 
-    // Re-enable button tomorrow
-    setTimeout(
-      () => {
+      // Re-enable button after a short delay for demo (not 24 hours)
+      setTimeout(() => {
         button.innerHTML =
           '<i class="fas fa-check-circle"></i> I showed up today!';
         button.style.background = "linear-gradient(135deg, #ff6b6b, #ffa726)";
         button.disabled = false;
-      },
-      1000 * 60 * 60 * 24,
-    ); // 24 hours
+      }, 5000); // 5 seconds for testing instead of 24 hours
+    }
   }
 
   showMessage(text) {
+    console.log("Streak message:", text);
     const msgEl = document.getElementById("streakMessage");
-    if (!msgEl) return;
+    if (!msgEl) {
+      console.error("Streak message element not found!");
+      return;
+    }
 
     msgEl.textContent = text;
     msgEl.classList.add("show");
@@ -906,37 +937,56 @@ class GoalTracker {
     try {
       const saved = localStorage.getItem(this.storageKey);
       return saved ? JSON.parse(saved) : defaultData;
-    } catch {
+    } catch (e) {
+      console.error("Error loading goal data:", e);
       return defaultData;
     }
   }
 
   saveData() {
-    localStorage.setItem(this.storageKey, JSON.stringify(this.data));
+    try {
+      localStorage.setItem(this.storageKey, JSON.stringify(this.data));
+    } catch (e) {
+      console.error("Error saving goal data:", e);
+    }
   }
 
   init() {
     this.setupUI();
     this.updateDisplay();
     this.setupEventListeners();
+    console.log("Goal Tracker initialized with data:", this.data);
   }
 
   setupUI() {
     const hasGoal = this.data.title && this.data.startDate;
 
-    if (hasGoal) {
-      document.getElementById("goalDisplay").style.display = "block";
-      document.getElementById("goalSetup").style.display = "none";
-      document.getElementById("progressButton").disabled = false;
+    const goalDisplay = document.getElementById("goalDisplay");
+    const goalSetup = document.getElementById("goalSetup");
+    const progressButton = document.getElementById("progressButton");
+
+    if (goalDisplay && goalSetup && progressButton) {
+      if (hasGoal) {
+        goalDisplay.style.display = "block";
+        goalSetup.style.display = "none";
+        progressButton.disabled = false;
+      } else {
+        goalDisplay.style.display = "none";
+        goalSetup.style.display = "block";
+        progressButton.disabled = true;
+      }
     } else {
-      document.getElementById("goalDisplay").style.display = "none";
-      document.getElementById("goalSetup").style.display = "block";
-      document.getElementById("progressButton").disabled = true;
+      console.error("Goal UI elements not found!");
     }
   }
 
   updateDisplay() {
-    if (!this.data.title) return;
+    if (!this.data.title) {
+      console.log("No goal data to display");
+      return;
+    }
+
+    console.log("Updating goal display with:", this.data);
 
     // Update title
     const goalTitleEl = document.getElementById("goalTitle");
@@ -952,14 +1002,18 @@ class GoalTracker {
     // Update progress bar
     const progressFillEl = document.getElementById("goalProgressFill");
     if (progressFillEl) {
-      progressFillEl.style.width = `${progressPercent}%`;
+      progressFillEl.style.width = `${Math.min(progressPercent, 100)}%`;
     }
 
-    // Update text
-    const progressDaysEl = document.getElementById("progressDays");
-    const totalDaysEl = document.getElementById("totalDays");
-    const progressPercentEl = document.getElementById("progressPercent");
-    const daysRemainingEl = document.getElementById("daysRemaining");
+    // Update text - FIXED: Use correct IDs
+    const progressDaysEl = document.querySelector("#goalDisplay #progressDays");
+    const totalDaysEl = document.querySelector("#goalDisplay #totalDays");
+    const progressPercentEl = document.querySelector(
+      "#goalDisplay #progressPercent",
+    );
+    const daysRemainingEl = document.querySelector(
+      "#goalDisplay #daysRemaining",
+    );
 
     if (progressDaysEl) progressDaysEl.textContent = this.data.progressDays;
     if (totalDaysEl) totalDaysEl.textContent = this.data.totalDays;
@@ -990,53 +1044,72 @@ class GoalTracker {
   }
 
   setupEventListeners() {
+    console.log("Setting up goal event listeners");
+
     // Edit goal button
     const editButton = document.getElementById("editGoalButton");
     if (editButton) {
       editButton.addEventListener("click", () => {
+        console.log("Edit goal clicked");
         this.showGoalSetup();
       });
+    } else {
+      console.error("Edit goal button not found");
     }
 
     // Save goal button
     const saveButton = document.getElementById("saveGoalButton");
     if (saveButton) {
       saveButton.addEventListener("click", () => {
+        console.log("Save goal clicked");
         this.saveGoal();
       });
+    } else {
+      console.error("Save goal button not found");
     }
 
     // Progress button
     const progressButton = document.getElementById("progressButton");
     if (progressButton) {
       progressButton.addEventListener("click", () => {
+        console.log("Progress button clicked");
         this.recordProgress();
       });
+    } else {
+      console.error("Progress button not found");
     }
 
     // Duration selector
     const durationSelect = document.getElementById("goalDuration");
     if (durationSelect) {
       durationSelect.addEventListener("change", (e) => {
-        if (e.target.value === "custom") {
-          document.getElementById("customDuration").style.display = "block";
-        } else {
-          document.getElementById("customDuration").style.display = "none";
+        const customDuration = document.getElementById("customDuration");
+        if (customDuration) {
+          if (e.target.value === "custom") {
+            customDuration.style.display = "block";
+          } else {
+            customDuration.style.display = "none";
+          }
         }
       });
     }
   }
 
   showGoalSetup() {
-    document.getElementById("goalDisplay").style.display = "none";
-    document.getElementById("goalSetup").style.display = "block";
+    const goalDisplay = document.getElementById("goalDisplay");
+    const goalSetup = document.getElementById("goalSetup");
 
-    // Pre-fill if editing
-    if (this.data.title) {
-      const goalInput = document.getElementById("goalInput");
-      const goalDuration = document.getElementById("goalDuration");
-      if (goalInput) goalInput.value = this.data.title;
-      if (goalDuration) goalDuration.value = this.data.totalDays.toString();
+    if (goalDisplay && goalSetup) {
+      goalDisplay.style.display = "none";
+      goalSetup.style.display = "block";
+
+      // Pre-fill if editing
+      if (this.data.title) {
+        const goalInput = document.getElementById("goalInput");
+        const goalDuration = document.getElementById("goalDuration");
+        if (goalInput) goalInput.value = this.data.title;
+        if (goalDuration) goalDuration.value = this.data.totalDays.toString();
+      }
     }
   }
 
@@ -1044,7 +1117,10 @@ class GoalTracker {
     const goalInput = document.getElementById("goalInput");
     const durationSelect = document.getElementById("goalDuration");
 
-    if (!goalInput || !durationSelect) return;
+    if (!goalInput || !durationSelect) {
+      console.error("Goal input elements not found");
+      return;
+    }
 
     const title = goalInput.value.trim();
 
@@ -1072,6 +1148,7 @@ class GoalTracker {
       completed: false,
     };
 
+    console.log("Saving new goal:", this.data);
     this.saveData();
     this.setupUI();
     this.updateDisplay();
@@ -1084,6 +1161,8 @@ class GoalTracker {
   recordProgress() {
     const today = new Date();
     const todayStr = today.toISOString().split("T")[0];
+
+    console.log("Recording progress for:", todayStr);
 
     // Check if already recorded today
     if (this.data.checkIns[todayStr]) {
@@ -1161,8 +1240,12 @@ class GoalTracker {
   }
 
   showMessage(text, isError = false) {
+    console.log("Goal message:", text);
     const msgEl = document.getElementById("motivationalMessage");
-    if (!msgEl) return;
+    if (!msgEl) {
+      console.error("Motivational message element not found!");
+      return;
+    }
 
     msgEl.textContent = text;
     msgEl.style.background = isError
