@@ -1,306 +1,412 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="Year Progress Tracker - Visualize how far into the year we are"
-    />
-    <title>Year Progress Tracker</title>
-    <link rel="stylesheet" href="Assets/styles/styles.css" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
-    <!-- PWA Configuration -->
-    <meta name="theme-color" content="#0f172a" />
-    <link rel="manifest" href="/manifest.json" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta
-      name="apple-mobile-web-app-status-bar-style"
-      content="black-translucent"
-    />
-
-    <!-- Favicon -->
-    <link
-      rel="icon"
-      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📅</text></svg>"
-    />
-    <!-- Monospace Font for Time Display -->
-    <link
-      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap"
-      rel="stylesheet"
-    />
-  </head>
-  <body>
-    <div class="container">
-      <!-- Theme Toggle with Pull Chain Light Bulb --><!-- Sophisticated Background Layers -->
-      <div class="grid-layer"></div>
-      <div class="time-pulse"></div>
-      <div class="data-streams"></div>
-      <div class="particles"></div>
-      <div class="theme-toggle-container">
-        <div class="pull-chain" title="Toggle theme"></div>
-        <div class="light-bulb" title="Toggle theme"></div>
-
-        <div class="toggle-switch">
-          <span>Dark</span>
-          <label>
-            <input type="checkbox" id="themeToggle" />
-            <span class="toggle-slider"></span>
-          </label>
-          <span>Light</span>
-        </div>
-      </div>
-      <header class="header">
-        <h1 class="app-title">Track your Year</h1>
-        <p class="app-subtitle">Visualize the passage of time</p>
-      </header>
-
-      <main class="main-content">
-        <section class="datetime-section">
-          <div class="date-container">
-            <div class="label">
-              <i class="fas fa-calendar-alt icon"></i>
-              <span>Current Date</span>
-            </div>
-            <div id="dateDisplay" class="value date-display">Loading...</div>
-          </div>
-
-          <div class="time-container">
-            <div class="label">
-              <i class="fas fa-clock icon"></i>
-              <span>Current Time</span>
-            </div>
-            <div id="timeDisplay" class="value time-display">00:00:00</div>
-          </div>
-        </section>
-
-        <section class="progress-section">
-          <h2 class="section-title">Year Progress</h2>
-
-          <div class="progress-info">
-            <div class="year-label" id="yearLabel">2026</div>
-            <div class="percentage-display" id="percentageDisplay">0%</div>
-          </div>
-
-          <div class="progress-container">
-            <div class="progress-background">
-              <div class="progress-bar" id="progressBar"></div>
-            </div>
-          </div>
-
-          <div class="progress-text" id="progressText">
-            2026 is <span id="percentText">0%</span> complete
-          </div>
-
-          <div class="progress-details">
-            <div class="detail-item">
-              <span class="detail-label">Day of Year:</span>
-              <span class="detail-value" id="dayOfYear">-</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">Days Remaining:</span>
-              <span class="detail-value" id="daysRemaining">-</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">Total Days:</span>
-              <span class="detail-value" id="totalDays">-</span>
-            </div>
-          </div>
-        </section>
-        <!-- Daily Streak Card -->
-        <section class="streak-card">
-          <div class="card-header">
-            <h2 class="card-title">
-              <i class="fas fa-fire"></i>
-              Daily Streak
-            </h2>
-            <div class="streak-display">
-              <span class="streak-count" id="streakCount">0</span>
-              <span class="streak-label">day streak</span>
-            </div>
-          </div>
-
-          <!-- GitHub-style contribution squares -->
-          <div class="streak-grid">
-            <div class="week" id="week1"></div>
-            <div class="week" id="week2"></div>
-            <div class="week" id="week3"></div>
-            <div class="week" id="week4"></div>
-          </div>
-
-          <!-- Legend -->
-          <div class="streak-legend">
-            <div class="legend-item">
-              <div class="legend-box no-checkin"></div>
-              <span>Missed</span>
-            </div>
-            <div class="legend-item">
-              <div class="legend-box checked-in"></div>
-              <span>Checked In</span>
-            </div>
-            <div class="legend-item">
-              <div class="legend-box current-streak"></div>
-              <span>Current Streak</span>
-            </div>
-          </div>
-
-          <!-- Action Button -->
-          <button class="streak-button" id="checkInButton">
-            <i class="fas fa-check-circle"></i>
-            I showed up today!
-          </button>
-
-          <div class="streak-message" id="streakMessage"></div>
-        </section>
-        <!-- Goal/Habit Card -->
-        <section class="goal-card">
-          <div class="card-header">
-            <h2 class="card-title">
-              <i class="fas fa-bullseye"></i>
-              My Goal
-            </h2>
-            <button class="edit-goal" id="editGoalButton">
-              <i class="fas fa-edit"></i>
-            </button>
-          </div>
-
-          <!-- Goal Display -->
-          <div class="goal-display" id="goalDisplay">
-            <div class="goal-title" id="goalTitle">No goal set</div>
-            <div class="goal-progress">
-              <div class="progress-bar">
-                <div
-                  class="progress-fill"
-                  id="goalProgressFill"
-                  style="width: 0%"
-                ></div>
-              </div>
-              <div class="progress-text">
-                <span id="progressDays">0</span> /
-                <span id="totalDays">0</span> days (<span id="progressPercent"
-                  >0%</span
-                >)
-              </div>
-            </div>
-
-            <div class="goal-details">
-              <div class="detail-item">
-                <i class="fas fa-calendar-check"></i>
-                <span>Started: <span id="startDate">-</span></span>
-              </div>
-              <div class="detail-item">
-                <i class="fas fa-hourglass-half"></i>
-                <span>Remaining: <span id="daysRemaining">-</span> days</span>
-              </div>
-              <div class="detail-item">
-                <i class="fas fa-tachometer-alt"></i>
-                <span>Pace: <span id="completionDate">-</span></span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Goal Setup (hidden by default) -->
-          <div class="goal-setup" id="goalSetup" style="display: none">
-            <h3>Set Your Goal</h3>
-            <div class="setup-form">
-              <input
-                type="text"
-                id="goalInput"
-                placeholder="What do you want to achieve?"
-                maxlength="50"
-              />
-              <div class="duration-selector">
-                <label>Duration:</label>
-                <select id="goalDuration">
-                  <option value="30">30 days</option>
-                  <option value="90" selected>90 days</option>
-                  <option value="180">180 days</option>
-                  <option value="365">1 year</option>
-                  <option value="custom">Custom</option>
-                </select>
-              </div>
-              <div
-                class="custom-duration"
-                id="customDuration"
-                style="display: none"
-              >
-                <input
-                  type="number"
-                  id="customDays"
-                  placeholder="Number of days"
-                  min="7"
-                  max="730"
-                />
-              </div>
-              <button class="save-goal" id="saveGoalButton">
-                Start Tracking
-              </button>
-            </div>
-          </div>
-
-          <!-- Action Button -->
-          <button class="goal-action-button" id="progressButton" disabled>
-            <i class="fas fa-chart-line"></i>
-            Track Progress
-          </button>
-
-          <div class="motivational-message" id="motivationalMessage"></div>
-        </section>
-        <!--Seasons-->
-        <section class="season-section">
-          <h2 class="section-title">
-            <i class="fas fa-globe-americas icon"></i>
-            Seasons
-          </h2>
-
-          <div class="season-controls">
-            <div class="dropdown-container">
-              <label for="seasonDropdown" class="dropdown-label">
-                Select Region
-              </label>
-              <select id="seasonDropdown" class="season-dropdown">
-                <option value="northern">Northern Hemisphere</option>
-                <option value="southern">Southern Hemisphere</option>
-              </select>
-            </div>
-
-            <div class="current-season" id="currentSeason">
-              <div class="season-icon">
-                <i class="fas fa-sun"></i>
-              </div>
-              <div class="season-info">
-                <div class="season-name">
-                  Current Season: <span id="seasonName">Summer</span>
-                </div>
-                <div class="season-dates" id="seasonDates">Dec 21 - Mar 19</div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </main>
-      <!--Footer-->
-      <footer class="footer">
-        <p class="footer-text">
-          Year Progress Tracker •
-          <span id="versionInfo">v1.0.0</span> •
-          <span id="currentYear">2026</span>
-        </p>
-        <p class="footer-note">
-          <i class="fas fa-code"></i>
-          Amilli Labs
-        </p>
-      </footer>
-    </div>
-
-    <script src="Assets/scripts/scripts.js"></script>
-  </body>
-</html>
+// DOM Elements const dateDisplay = document.getElementById("dateDisplay");
+const timeDisplay = document.getElementById("timeDisplay"); const progressBar =
+document.getElementById("progressBar"); const percentageDisplay =
+document.getElementById("percentageDisplay"); const progressText =
+document.getElementById("progressText"); const percentText =
+document.getElementById("percentText"); const yearLabel =
+document.getElementById("yearLabel"); const dayOfYear =
+document.getElementById("dayOfYear"); const daysRemaining =
+document.getElementById("daysRemaining"); const totalDays =
+document.getElementById("totalDays"); const seasonDropdown =
+document.getElementById("seasonDropdown"); const seasonName =
+document.getElementById("seasonName"); const seasonDates =
+document.getElementById("seasonDates"); const currentYear =
+document.getElementById("currentYear"); const versionInfo =
+document.getElementById("versionInfo"); // Theme Toggle Elements const lightBulb
+= document.querySelector(".light-bulb"); const pullChain =
+document.querySelector(".pull-chain"); const themeToggle =
+document.getElementById("themeToggle"); const toggleSwitch =
+document.querySelector(".toggle-switch"); // App Configuration const CONFIG = {
+VERSION: "1.2.0", UPDATE_INTERVAL: 1000, PERFORMANCE: { THROTTLE_ANIMATIONS:
+true, ANIMATION_DURATION: 800, REDUCED_MOTION:
+window.matchMedia("(prefers-reduced-motion: reduce)") .matches, }, THEME: {
+DARK: "dark", LIGHT: "light", STORAGE_KEY: "yearProgressTheme", }, BACKGROUND: {
+PARTICLE_COUNT: 50, DATA_STREAMS: 4, GRID_SIZE: 40, }, SEASONS: { northern: {
+spring: { name: "Spring", startMonth: 2, startDay: 20, endMonth: 5, endDay: 20,
+icon: "fas fa-seedling", color: "#4ade80", }, summer: { name: "Summer",
+startMonth: 5, startDay: 21, endMonth: 8, endDay: 22, icon: "fas fa-sun", color:
+"#fbbf24", }, autumn: { name: "Autumn", startMonth: 8, startDay: 23, endMonth:
+11, endDay: 21, icon: "fas fa-leaf", color: "#f97316", }, winter: { name:
+"Winter", startMonth: 11, startDay: 22, endMonth: 1, endDay: 19, icon: "fas
+fa-snowflake", color: "#60a5fa", }, }, southern: { autumn: { name: "Autumn",
+startMonth: 2, startDay: 20, endMonth: 5, endDay: 20, icon: "fas fa-leaf",
+color: "#f97316", }, winter: { name: "Winter", startMonth: 5, startDay: 21,
+endMonth: 8, endDay: 22, icon: "fas fa-snowflake", color: "#60a5fa", }, spring:
+{ name: "Spring", startMonth: 8, startDay: 23, endMonth: 11, endDay: 21, icon:
+"fas fa-seedling", color: "#4ade80", }, summer: { name: "Summer", startMonth:
+11, startDay: 22, endMonth: 1, endDay: 19, icon: "fas fa-sun", color: "#fbbf24",
+}, }, }, }; // ============================================ // SOPHISTICATED
+BACKGROUND SYSTEM // ============================================ class
+BackgroundSystem { constructor() { this.particles = []; this.isReducedMotion =
+CONFIG.PERFORMANCE.REDUCED_MOTION; this.init(); } init() { if
+(this.isReducedMotion) return; this.createGridLayer(); this.createTimePulse();
+this.createDataStreams(); this.createParticles(); } createGridLayer() { const
+gridLayer = document.createElement("div"); gridLayer.className = "grid-layer";
+document.body.appendChild(gridLayer); } createTimePulse() { const timePulse =
+document.createElement("div"); timePulse.className = "time-pulse";
+document.body.appendChild(timePulse); } createDataStreams() { const
+streamsContainer = document.createElement("div"); streamsContainer.className =
+"data-streams"; // Create 4 data streams (2 on each side) for (let i = 0; i <
+CONFIG.BACKGROUND.DATA_STREAMS; i++) { const stream =
+document.createElement("div"); const isLeft = i < 2; const position = i % 2 ===
+0 ? 1 : 2; stream.className = `data-stream ${isLeft ? "left" :
+"right"}-${position}`; streamsContainer.appendChild(stream); }
+document.body.appendChild(streamsContainer); } createParticles() { const
+particlesContainer = document.createElement("div"); particlesContainer.className
+= "particles"; document.body.appendChild(particlesContainer); // Calculate
+optimal particle count based on screen size const particleCount =
+window.innerWidth < 768 ? Math.floor(CONFIG.BACKGROUND.PARTICLE_COUNT / 2) :
+CONFIG.BACKGROUND.PARTICLE_COUNT; for (let i = 0; i < particleCount; i++) {
+this.createParticle(particlesContainer, i); } } createParticle(container, index)
+{ const particle = document.createElement("div"); particle.className =
+"particle"; // Calculate position based on golden ratio for natural distribution
+const goldenRatio = (1 + Math.sqrt(5)) / 2; const angle = (index * 2 * Math.PI)
+/ goldenRatio; const radius = Math.sqrt(index) * 2; const x = 50 + radius *
+Math.cos(angle); const drift = Math.sin(angle) * 2; // Natural drift pattern //
+Size based on distance from center (smaller at edges) const centerDistance =
+Math.abs(x - 50) / 50; const size = 1 + (1 - centerDistance) * 1.5; // Speed
+based on position (faster near center) const speed = 20 + (1 - centerDistance) *
+15; // Delayed start for staggered appearance const delay = index * 0.1;
+particle.style.cssText = ` width: ${size}px; height: ${size}px; left: ${x}vw;
+animation-delay: ${delay}s; animation-duration: ${speed}s; --particle-drift:
+${drift}; `; // Store reference this.particles.push({ element: particle, x,
+drift, speed, delay, }); container.appendChild(particle); }
+updateForTheme(isDark) { // Update particle colors based on theme const
+particles = document.querySelectorAll(".particle"); particles.forEach((particle)
+=> { particle.style.background = isDark ? "rgba(76, 201, 240, 0.3)" : "rgba(67,
+97, 238, 0.2)"; }); } updateForPerformance() { // Throttle animations if needed
+if (window.performance && window.performance.memory) { const usedJSHeapSize =
+window.performance.memory.usedJSHeapSize; const maxHeapSize =
+window.performance.memory.jsHeapSizeLimit; if (usedJSHeapSize > maxHeapSize *
+0.7) { this.throttleAnimations(); } } } throttleAnimations() { // Reduce
+animation intensity if memory is high const animations =
+document.querySelectorAll(".particle, .data-stream"); animations.forEach((anim)
+=> { const currentDuration = parseFloat(
+getComputedStyle(anim).animationDuration, ); anim.style.animationDuration =
+`${currentDuration * 1.5}s`; }); } } //
+============================================ // THEME MANAGEMENT //
+============================================ class ThemeManager {
+constructor(backgroundSystem) { this.currentTheme = this.getPreferredTheme();
+this.backgroundSystem = backgroundSystem; this.init(); } getPreferredTheme() {
+const savedTheme = localStorage.getItem(CONFIG.THEME.STORAGE_KEY); if
+(savedTheme) { return savedTheme; } return
+window.matchMedia("(prefers-color-scheme: dark)").matches ? CONFIG.THEME.DARK :
+CONFIG.THEME.LIGHT; } init() { this.setTheme(this.currentTheme);
+this.setupEventListeners(); this.watchSystemTheme(); } setTheme(theme) {
+this.currentTheme = theme; document.documentElement.setAttribute("data-theme",
+theme); localStorage.setItem(CONFIG.THEME.STORAGE_KEY, theme); const isDark =
+theme === CONFIG.THEME.DARK; this.updateUI(isDark); // Update background system
+if (this.backgroundSystem) { this.backgroundSystem.updateForTheme(isDark); } }
+toggleTheme() { const newTheme = this.currentTheme === CONFIG.THEME.DARK ?
+CONFIG.THEME.LIGHT : CONFIG.THEME.DARK; this.setTheme(newTheme);
+this.triggerPullChainAnimation(); return newTheme; } updateUI(isDark) { if
+(lightBulb) { lightBulb.classList.toggle("on", !isDark); } if (themeToggle) {
+themeToggle.checked = !isDark; } } triggerPullChainAnimation() { if (pullChain)
+{ pullChain.classList.add("pulling"); setTimeout(() => {
+pullChain.classList.remove("pulling"); }, 500); } } setupEventListeners() { if
+(lightBulb) { lightBulb.addEventListener("click", () => this.toggleTheme()); }
+if (pullChain) { pullChain.addEventListener("click", () => this.toggleTheme());
+} if (themeToggle) { themeToggle.addEventListener("change", () =>
+this.toggleTheme()); } } watchSystemTheme() { const mediaQuery =
+window.matchMedia("(prefers-color-scheme: dark)");
+mediaQuery.addEventListener("change", (e) => { if
+(!localStorage.getItem(CONFIG.THEME.STORAGE_KEY)) { this.setTheme(e.matches ?
+CONFIG.THEME.DARK : CONFIG.THEME.LIGHT); } }); } } //
+============================================ // CORE APP FUNCTIONALITY //
+============================================ // Utility Functions function
+formatDate(date) { const options = { weekday: "long", year: "numeric", month:
+"long", day: "numeric", }; return date.toLocaleDateString("en-US", options); }
+function formatTime(date) { return date.toLocaleTimeString("en-US", { hour12:
+false, hour: "2-digit", minute: "2-digit", second: "2-digit", }); } function
+isLeapYear(year) { return (year % 4 === 0 && year % 100 !== 0) || year % 400 ===
+0; } function getDayOfYear(date) { const start = new Date(date.getFullYear(), 0,
+0); const diff = date - start; const oneDay = 1000 * 60 * 60 * 24; return
+Math.floor(diff / oneDay); } function getDaysInYear(year) { return
+isLeapYear(year) ? 366 : 365; } function calculateProgress(currentDate) { const
+year = currentDate.getFullYear(); const dayOfYearValue =
+getDayOfYear(currentDate); const totalDaysInYear = getDaysInYear(year); const
+progress = (dayOfYearValue / totalDaysInYear) * 100; return { year, dayOfYear:
+dayOfYearValue, totalDays: totalDaysInYear, progress: progress, daysRemaining:
+totalDaysInYear - dayOfYearValue, }; } function getCurrentSeason(date,
+hemisphere = "northern") { const month = date.getMonth() + 1; const day =
+date.getDate(); const seasons = CONFIG.SEASONS[hemisphere]; for (const season of
+Object.values(seasons)) { const startDate = new Date( date.getFullYear(),
+season.startMonth - 1, season.startDay, ); let endDate = new Date(
+date.getFullYear(), season.endMonth - 1, season.endDay, ); if (season.startMonth
+> season.endMonth) { if (month >= season.startMonth || month <= season.endMonth)
+{ if (month === season.startMonth && day < season.startDay) { continue; } if
+(month === season.endMonth && day > season.endDay) { continue; } return season;
+} } else { if (month > season.startMonth && month < season.endMonth) { return
+season; } if (month === season.startMonth && day >= season.startDay) { return
+season; } if (month === season.endMonth && day <= season.endDay) { return
+season; } } } return Object.values(seasons)[0]; } // Performance Optimized
+Update Functions let lastProgressUpdate = 0; const PROGRESS_UPDATE_THROTTLE =
+5000; function updateDateTime() { const now = new Date(); const timestamp =
+now.getTime(); dateDisplay.textContent = formatDate(now);
+timeDisplay.textContent = formatTime(now); const progressData =
+calculateProgress(now); yearLabel.textContent = progressData.year; const
+formattedProgress = progressData.progress.toFixed(2);
+percentageDisplay.textContent = `${formattedProgress}%`; percentText.textContent
+= `${formattedProgress}%`; progressBar.style.width =
+`${progressData.progress}%`; if (timestamp - lastProgressUpdate >
+PROGRESS_UPDATE_THROTTLE) { dayOfYear.textContent = progressData.dayOfYear;
+daysRemaining.textContent = progressData.daysRemaining; totalDays.textContent =
+progressData.totalDays; lastProgressUpdate = timestamp; } updateSeason(now);
+currentYear.textContent = progressData.year; } function updateSeason(date) {
+const hemisphere = seasonDropdown.value; const season = getCurrentSeason(date,
+hemisphere); seasonName.textContent = season.name; seasonName.style.color =
+season.color; const startMonthName = getMonthName(season.startMonth - 1); const
+endMonthName = getMonthName(season.endMonth - 1); seasonDates.textContent =
+`${startMonthName} ${season.startDay} - ${endMonthName} ${season.endDay}`; const
+seasonIcon = document.querySelector(".season-icon i"); if (seasonIcon) {
+seasonIcon.classList.remove( "fa-sun", "fa-snowflake", "fa-seedling", "fa-leaf",
+); const iconClasses = season.icon.split(" "); iconClasses.forEach((cls) => { if
+(cls) seasonIcon.classList.add(cls); }); seasonIcon.style.color = season.color;
+} } function getMonthName(monthIndex) { const months = [ "Jan", "Feb", "Mar",
+"Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", ]; return
+months[monthIndex]; } // ============================================ //
+INITIALIZATION // ============================================ let
+backgroundSystem; let themeManager; let updateInterval; function init() {
+console.log(`Year Progress Tracker v${CONFIG.VERSION} initializing...`); //
+Initialize background system backgroundSystem = new BackgroundSystem(); //
+Initialize theme manager with background system themeManager = new
+ThemeManager(backgroundSystem); // Initialize Streak System (only if elements
+exist) if (document.getElementById("streakCount")) { window.streakSystem = new
+DailyStreak(); console.log("Daily Streak system initialized"); } // Initialize
+Goal Tracker (only if elements exist) if (document.getElementById("goalTitle"))
+{ window.goalTracker = new GoalTracker(); console.log("Goal Tracker system
+initialized"); } // Set version info versionInfo.textContent =
+`v${CONFIG.VERSION}`; // Set initial progress text with percentage const now =
+new Date(); const initialProgress = calculateProgress(now);
+progressText.textContent = `${initialProgress.year} is
+${initialProgress.progress.toFixed(2)}% complete`; // Set up updates
+updateInterval = setInterval(updateDateTime, CONFIG.UPDATE_INTERVAL); // Event
+listeners seasonDropdown.addEventListener("change", () => { updateDateTime();
+}); // Configure animations progressBar.style.transition = `width
+${CONFIG.PERFORMANCE.ANIMATION_DURATION}ms cubic-bezier(0.34, 1.56, 0.64, 1)`;
+// Animate toggle switch animateToggleSwitch(); // Initial update
+updateDateTime(); // Performance monitoring - FIXED: Remove Node.js syntax //
+Check if we're in development mode via URL const isDevelopment =
+window.location.hostname === 'localhost' || window.location.hostname ===
+'127.0.0.1' || window.location.protocol === 'file:'; if (isDevelopment) {
+setupPerformanceMonitoring(); } console.log("App initialized successfully"); //
+Handle performance updates window.addEventListener("resize", handleResize); }
+function animateToggleSwitch() { setTimeout(() => { if (toggleSwitch) {
+toggleSwitch.classList.add("visible"); } }, 1000); } function handleResize() {
+// Throttle resize handling clearTimeout(window.resizeTimeout);
+window.resizeTimeout = setTimeout(() => { if (backgroundSystem) {
+backgroundSystem.updateForPerformance(); } }, 250); } function
+setupPerformanceMonitoring() { let frameCount = 0; let lastTime =
+performance.now(); function checkFPS(currentTime) { frameCount++; if
+(currentTime > lastTime + 1000) { const fps = Math.round((frameCount * 1000) /
+(currentTime - lastTime)); if (fps < 30) { console.warn(`Low FPS: ${fps}.
+Consider reducing animations.`); if (backgroundSystem) {
+backgroundSystem.throttleAnimations(); } } frameCount = 0; lastTime =
+currentTime; } requestAnimationFrame(checkFPS); }
+requestAnimationFrame(checkFPS); } //
+============================================ // SERVICE WORKER & CLEANUP //
+============================================ function registerServiceWorker() {
+if ( "serviceWorker" in navigator && (window.location.protocol === "https:" ||
+window.location.hostname === "localhost") ) { navigator.serviceWorker
+.register("/service-worker.js") .then((registration) => {
+console.log("ServiceWorker registered:", registration); }) .catch((error) => {
+console.error("ServiceWorker registration failed:", error); }); } } function
+cleanup() { if (updateInterval) { clearInterval(updateInterval); }
+window.removeEventListener("resize", handleResize); } //
+============================================ // START THE APP //
+============================================
+document.addEventListener("DOMContentLoaded", () => { init();
+registerServiceWorker(); window.addEventListener("beforeunload", cleanup); });
+// Export for testing if needed // Remove Node.js export since this runs in
+browser // if (typeof module !== "undefined" && module.exports) { //
+module.exports = { // calculateProgress, // formatDate, // formatTime, //
+ThemeManager, // BackgroundSystem, // }; // } //
+============================================ // DAILY STREAK SYSTEM //
+============================================ class DailyStreak { constructor() {
+this.storageKey = "yearProgress_streak"; this.data = this.loadData();
+this.init(); } loadData() { const defaultData = { streak: 0, lastCheckIn: null,
+checkIns: {}, // YYYY-MM-DD: level longestStreak: 0, }; try { const saved =
+localStorage.getItem(this.storageKey); return saved ? JSON.parse(saved) :
+defaultData; } catch (e) { console.error("Error loading streak data:", e);
+return defaultData; } } saveData() { try { localStorage.setItem(this.storageKey,
+JSON.stringify(this.data)); } catch (e) { console.error("Error saving streak
+data:", e); } } init() { this.updateStreakGrid(); this.setupCheckInButton();
+this.updateDisplay(); } updateDisplay() { // Update streak count const
+streakCountEl = document.getElementById("streakCount"); if (streakCountEl) {
+streakCountEl.textContent = this.data.streak; } // Update message if needed
+this.showWelcomeMessage(); } showWelcomeMessage() { const msgEl =
+document.getElementById("streakMessage"); if (msgEl && this.data.streak === 0) {
+msgEl.textContent = "Start your streak today! Come back tomorrow to continue.";
+msgEl.classList.add("show"); } } updateStreakGrid() { // Create last 28 days
+grid (4 weeks) const grid = document.querySelector(".streak-grid"); if (!grid)
+return; // Clear existing grid.innerHTML = ""; const today = new Date(); for
+(let week = 0; week < 4; week++) { const weekDiv =
+document.createElement("div"); weekDiv.className = "week"; weekDiv.id =
+`week${week + 1}`; for (let day = 6; day >= 0; day--) { const date = new
+Date(today); date.setDate(date.getDate() - (week * 7 + day)); const dateStr =
+this.formatDate(date); const dayBox = document.createElement("div");
+dayBox.className = "day-box"; dayBox.title = date.toLocaleDateString(); // Check
+if this date has a check-in if (this.data.checkIns[dateStr]) { const level =
+this.data.checkIns[dateStr]; dayBox.classList.add(`level-${level}`); // Add
+sparkle for today's check-in if (dateStr === this.formatDate(today)) {
+dayBox.innerHTML = "✨"; dayBox.style.background = "transparent"; } }
+weekDiv.appendChild(dayBox); } grid.appendChild(weekDiv); } } formatDate(date) {
+return date.toISOString().split("T")[0]; // YYYY-MM-DD } setupCheckInButton() {
+const button = document.getElementById("checkInButton"); if (!button) {
+console.error("Check-in button not found!"); return; }
+button.addEventListener("click", () => { this.checkIn(); });
+console.log("Check-in button setup complete"); } checkIn() {
+console.log("Check-in clicked!"); const today = new Date(); const todayStr =
+this.formatDate(today); const yesterday = new Date(today);
+yesterday.setDate(yesterday.getDate() - 1); const yesterdayStr =
+this.formatDate(yesterday); console.log("Today:", todayStr, "Yesterday:",
+yesterdayStr, "Last check-in:", this.data.lastCheckIn); // Check if already
+checked in today if (this.data.checkIns[todayStr]) { this.showMessage("Already
+checked in today! Come back tomorrow."); return; } // Record check-in
+this.data.checkIns[todayStr] = 1; // Level 1 for now // Update streak if
+(this.data.lastCheckIn === yesterdayStr) { // Consecutive day
+this.data.streak++; this.showMessage(`🔥 Day ${this.data.streak}! Keep the
+streak going!`); } else if (!this.data.lastCheckIn) { // First check-in
+this.data.streak = 1; this.showMessage("🎉 First day! Your streak begins!"); }
+else { // Streak broken if (this.data.streak > 0) { this.showMessage( `💔 Streak
+broken at ${this.data.streak} days. Starting fresh!`, ); } this.data.streak = 1;
+} // Update longest streak if (this.data.streak > this.data.longestStreak) {
+this.data.longestStreak = this.data.streak; } this.data.lastCheckIn = todayStr;
+this.saveData(); this.updateStreakGrid(); this.updateDisplay(); // Button
+animation const button = document.getElementById("checkInButton"); if (button) {
+button.innerHTML = '<i class="fas fa-check-circle"></i> Checked In!';
+button.style.background = "linear-gradient(135deg, #40c463, #30a14e)";
+button.disabled = true; // Re-enable button after a short delay for demo (not 24
+hours) setTimeout(() => { button.innerHTML = '<i
+  class="fas fa-check-circle"
+></i>
+I showed up today!'; button.style.background = "linear-gradient(135deg, #ff6b6b,
+#ffa726)"; button.disabled = false; }, 5000); // 5 seconds for testing instead
+of 24 hours } } showMessage(text) { console.log("Streak message:", text); const
+msgEl = document.getElementById("streakMessage"); if (!msgEl) {
+console.error("Streak message element not found!"); return; } msgEl.textContent
+= text; msgEl.classList.add("show"); // Auto-hide after 5 seconds setTimeout(()
+=> { msgEl.classList.remove("show"); }, 5000); } } //
+============================================ // GOAL/HABIT SYSTEM //
+============================================ class GoalTracker { constructor() {
+this.storageKey = "yearProgress_goal"; this.data = this.loadData(); this.init();
+} loadData() { const defaultData = { title: "", startDate: null, progressDays:
+0, totalDays: 90, // Default 90 days checkIns: {}, // YYYY-MM-DD: true
+completed: false, }; try { const saved = localStorage.getItem(this.storageKey);
+return saved ? JSON.parse(saved) : defaultData; } catch (e) {
+console.error("Error loading goal data:", e); return defaultData; } } saveData()
+{ try { localStorage.setItem(this.storageKey, JSON.stringify(this.data)); }
+catch (e) { console.error("Error saving goal data:", e); } } init() {
+this.setupUI(); this.updateDisplay(); this.setupEventListeners();
+console.log("Goal Tracker initialized with data:", this.data); } setupUI() {
+const hasGoal = this.data.title && this.data.startDate; const goalDisplay =
+document.getElementById("goalDisplay"); const goalSetup =
+document.getElementById("goalSetup"); const progressButton =
+document.getElementById("progressButton"); if (goalDisplay && goalSetup &&
+progressButton) { if (hasGoal) { goalDisplay.style.display = "block";
+goalSetup.style.display = "none"; progressButton.disabled = false; } else {
+goalDisplay.style.display = "none"; goalSetup.style.display = "block";
+progressButton.disabled = true; } } else { console.error("Goal UI elements not
+found!"); } } updateDisplay() { if (!this.data.title) { console.log("No goal
+data to display"); return; } console.log("Updating goal display with:",
+this.data); // Update title const goalTitleEl =
+document.getElementById("goalTitle"); if (goalTitleEl) { goalTitleEl.textContent
+= this.data.title; } // Calculate progress const progressPercent =
+(this.data.progressDays / this.data.totalDays) * 100; const remainingDays =
+this.data.totalDays - this.data.progressDays; // Update progress bar const
+progressFillEl = document.getElementById("goalProgressFill"); if
+(progressFillEl) { progressFillEl.style.width = `${Math.min(progressPercent,
+100)}%`; } // Update text - FIXED: Use correct IDs const progressDaysEl =
+document.querySelector("#goalDisplay #progressDays"); const totalDaysEl =
+document.querySelector("#goalDisplay #totalDays"); const progressPercentEl =
+document.querySelector("#goalDisplay #progressPercent"); const daysRemainingEl =
+document.querySelector("#goalDisplay #daysRemaining"); if (progressDaysEl)
+progressDaysEl.textContent = this.data.progressDays; if (totalDaysEl)
+totalDaysEl.textContent = this.data.totalDays; if (progressPercentEl) {
+progressPercentEl.textContent = `${Math.min(progressPercent, 100).toFixed(1)}%`;
+} if (daysRemainingEl) daysRemainingEl.textContent = remainingDays; // Update
+dates if (this.data.startDate) { const start = new Date(this.data.startDate);
+const startDateEl = document.getElementById("startDate"); if (startDateEl) {
+startDateEl.textContent = start.toLocaleDateString(); } // Calculate estimated
+completion const completionDate = new Date(start);
+completionDate.setDate(completionDate.getDate() + this.data.totalDays); const
+completionDateEl = document.getElementById("completionDate"); if
+(completionDateEl) { completionDateEl.textContent =
+completionDate.toLocaleDateString(); } } // Check for motivational message
+this.checkMotivationalMessage(); } setupEventListeners() { console.log("Setting
+up goal event listeners"); // Edit goal button const editButton =
+document.getElementById("editGoalButton"); if (editButton) {
+editButton.addEventListener("click", () => { console.log("Edit goal clicked");
+this.showGoalSetup(); }); } else { console.error("Edit goal button not found");
+} // Save goal button const saveButton =
+document.getElementById("saveGoalButton"); if (saveButton) {
+saveButton.addEventListener("click", () => { console.log("Save goal clicked");
+this.saveGoal(); }); } else { console.error("Save goal button not found"); } //
+Progress button const progressButton =
+document.getElementById("progressButton"); if (progressButton) {
+progressButton.addEventListener("click", () => { console.log("Progress button
+clicked"); this.recordProgress(); }); } else { console.error("Progress button
+not found"); } // Duration selector const durationSelect =
+document.getElementById("goalDuration"); if (durationSelect) {
+durationSelect.addEventListener("change", (e) => { const customDuration =
+document.getElementById("customDuration"); if (customDuration) { if
+(e.target.value === "custom") { customDuration.style.display = "block"; } else {
+customDuration.style.display = "none"; } } }); } } showGoalSetup() { const
+goalDisplay = document.getElementById("goalDisplay"); const goalSetup =
+document.getElementById("goalSetup"); if (goalDisplay && goalSetup) {
+goalDisplay.style.display = "none"; goalSetup.style.display = "block"; //
+Pre-fill if editing if (this.data.title) { const goalInput =
+document.getElementById("goalInput"); const goalDuration =
+document.getElementById("goalDuration"); if (goalInput) goalInput.value =
+this.data.title; if (goalDuration) goalDuration.value =
+this.data.totalDays.toString(); } } } saveGoal() { const goalInput =
+document.getElementById("goalInput"); const durationSelect =
+document.getElementById("goalDuration"); if (!goalInput || !durationSelect) {
+console.error("Goal input elements not found"); return; } const title =
+goalInput.value.trim(); if (!title) { this.showMessage("Please enter a goal!",
+true); return; } let totalDays; if (durationSelect.value === "custom") { const
+customDaysInput = document.getElementById("customDays"); totalDays =
+customDaysInput ? parseInt(customDaysInput.value) || 90 : 90; if (totalDays < 7)
+totalDays = 7; if (totalDays > 730) totalDays = 730; // 2 years max } else {
+totalDays = parseInt(durationSelect.value); } this.data = { title: title,
+startDate: new Date().toISOString().split("T")[0], progressDays: 0, totalDays:
+totalDays, checkIns: {}, completed: false, }; console.log("Saving new goal:",
+this.data); this.saveData(); this.setupUI(); this.updateDisplay();
+this.showMessage( `🎯 Goal set! "${title}" for ${totalDays} days. Start
+tracking!`, ); } recordProgress() { const today = new Date(); const todayStr =
+today.toISOString().split("T")[0]; console.log("Recording progress for:",
+todayStr); // Check if already recorded today if (this.data.checkIns[todayStr])
+{ this.showMessage("Already recorded progress today! Great job!", false);
+return; } // Record progress this.data.checkIns[todayStr] = true;
+this.data.progressDays++; // Check if goal completed if (this.data.progressDays
+>= this.data.totalDays) { this.data.completed = true; this.showMessage( `🎉
+CONGRATULATIONS! You completed your goal: "${this.data.title}"!`, false, ); }
+this.saveData(); this.updateDisplay(); // Button animation const button =
+document.getElementById("progressButton"); if (button) {
+button.classList.add("check-in-pulse"); setTimeout(() => {
+button.classList.remove("check-in-pulse"); }, 500); } // Show success message
+this.showMessage( `✅ Day ${this.data.progressDays} recorded! Keep going!`,
+false, ); } checkMotivationalMessage() { const msgEl =
+document.getElementById("motivationalMessage"); if (!msgEl) return; // Weekly
+check (every 7 days) if (this.data.progressDays > 0 && this.data.progressDays %
+7 === 0) { const messages = [ `🔥 Week ${this.data.progressDays / 7} completed!
+You're on fire!`, `🎯 ${this.data.progressDays} days down! If you keep this
+pace, you'll finish by ${this.getCompletionDate()}.`, `💪 Consistency is key!
+You've shown up ${this.data.progressDays} days in a row.`, `🚀
+${((this.data.progressDays / this.data.totalDays) * 100).toFixed(1)}% to your
+goal! Keep pushing!`, ]; const randomMsg = messages[Math.floor(Math.random() *
+messages.length)]; this.showMessage(randomMsg, false); } // Milestone messages
+const milestones = [10, 25, 50, 100]; if
+(milestones.includes(this.data.progressDays)) { this.showMessage( `🏆
+${this.data.progressDays}-day milestone reached! Amazing work!`, false, ); } }
+getCompletionDate() { if (!this.data.startDate) return "the future"; const start
+= new Date(this.data.startDate); const completion = new Date(start);
+completion.setDate(completion.getDate() + this.data.totalDays); return
+completion.toLocaleDateString(); } showMessage(text, isError = false) {
+console.log("Goal message:", text); const msgEl =
+document.getElementById("motivationalMessage"); if (!msgEl) {
+console.error("Motivational message element not found!"); return; }
+msgEl.textContent = text; msgEl.style.background = isError ? "rgba(255, 107,
+107, 0.1)" : "rgba(67, 97, 238, 0.1)"; msgEl.style.color = isError ? "#ff6b6b" :
+"var(--accent-color)"; msgEl.classList.add("show"); setTimeout(() => {
+msgEl.classList.remove("show"); }, 5000); } }
