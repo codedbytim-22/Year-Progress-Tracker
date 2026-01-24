@@ -23,7 +23,7 @@ const toggleSwitch = document.querySelector(".toggle-switch");
 
 // App Configuration
 const CONFIG = {
-  VERSION: "1.2.0",
+  VERSION: "1.3.0", // Updated version
   UPDATE_INTERVAL: 1000,
   PERFORMANCE: {
     THROTTLE_ANIMATIONS: true,
@@ -588,8 +588,7 @@ function init() {
   // Initial update
   updateDateTime();
 
-  // Performance monitoring - FIXED: Remove Node.js syntax
-  // Check if we're in development mode via URL
+  // Performance monitoring
   const isDevelopment =
     window.location.hostname === "localhost" ||
     window.location.hostname === "127.0.0.1" ||
@@ -689,20 +688,8 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("beforeunload", cleanup);
 });
 
-// Export for testing if needed
-// Remove Node.js export since this runs in browser
-// if (typeof module !== "undefined" && module.exports) {
-//   module.exports = {
-//     calculateProgress,
-//     formatDate,
-//     formatTime,
-//     ThemeManager,
-//     BackgroundSystem,
-//   };
-// }
-
 // ============================================
-// DAILY STREAK SYSTEM
+// DAILY STREAK SYSTEM - FIXED VERSION
 // ============================================
 
 class DailyStreak {
@@ -738,9 +725,35 @@ class DailyStreak {
   }
 
   init() {
+    this.checkDailyReset(); // Check for missed days on load
     this.updateStreakGrid();
     this.setupCheckInButton();
     this.updateDisplay();
+  }
+
+  checkDailyReset() {
+    const today = new Date();
+    const todayStr = this.formatDate(today);
+
+    // If user has never checked in, do nothing
+    if (!this.data.lastCheckIn) return;
+
+    // If last check-in was today, streak is fine
+    if (this.data.lastCheckIn === todayStr) return;
+
+    const lastCheckInDate = new Date(this.data.lastCheckIn);
+    const daysDiff = Math.floor(
+      (today - lastCheckInDate) / (1000 * 60 * 60 * 24),
+    );
+
+    console.log(`Days since last check-in: ${daysDiff}`);
+
+    // If missed more than 1 day, reset streak
+    if (daysDiff > 1) {
+      console.log(`Streak reset: Missed ${daysDiff} days`);
+      this.data.streak = 0;
+      this.saveData();
+    }
   }
 
   updateDisplay() {
@@ -827,6 +840,13 @@ class DailyStreak {
 
     const today = new Date();
     const todayStr = this.formatDate(today);
+
+    // Check if already checked in today
+    if (this.data.checkIns[todayStr]) {
+      this.showMessage("Already checked in today! Come back tomorrow.");
+      return;
+    }
+
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayStr = this.formatDate(yesterday);
@@ -840,40 +860,35 @@ class DailyStreak {
       this.data.lastCheckIn,
     );
 
-    // Check if already checked in today
-    if (this.data.checkIns[todayStr]) {
-      this.showMessage("Already checked in today! Come back tomorrow.");
-      return;
-    }
-
-    // Record check-in
-    this.data.checkIns[todayStr] = 1; // Level 1 for now
-
-    // Update streak
-    if (this.data.lastCheckIn === yesterdayStr) {
+    // ✅ FIXED STREAK LOGIC
+    if (!this.data.lastCheckIn) {
+      // First check-in ever
+      this.data.streak = 1;
+      this.showMessage("🎉 First day! Your streak begins!");
+    } else if (this.data.lastCheckIn === yesterdayStr) {
       // Consecutive day
       this.data.streak++;
       this.showMessage(`🔥 Day ${this.data.streak}! Keep the streak going!`);
-    } else if (!this.data.lastCheckIn) {
-      // First check-in
-      this.data.streak = 1;
-      this.showMessage("🎉 First day! Your streak begins!");
+    } else if (this.data.lastCheckIn === todayStr) {
+      // Already checked in today (shouldn't reach here due to earlier check)
+      return;
     } else {
-      // Streak broken
-      if (this.data.streak > 0) {
-        this.showMessage(
-          `💔 Streak broken at ${this.data.streak} days. Starting fresh!`,
-        );
-      }
+      // Missed one or more days - reset streak
+      const lastDate = new Date(this.data.lastCheckIn);
+      const daysMissed = Math.floor((today - lastDate) / (1000 * 60 * 60 * 24));
       this.data.streak = 1;
+      this.showMessage(`💔 Missed ${daysMissed} days. Starting fresh!`);
     }
+
+    // Record check-in
+    this.data.checkIns[todayStr] = 1;
+    this.data.lastCheckIn = todayStr;
 
     // Update longest streak
     if (this.data.streak > this.data.longestStreak) {
       this.data.longestStreak = this.data.streak;
     }
 
-    this.data.lastCheckIn = todayStr;
     this.saveData();
     this.updateStreakGrid();
     this.updateDisplay();
@@ -885,13 +900,22 @@ class DailyStreak {
       button.style.background = "linear-gradient(135deg, #40c463, #30a14e)";
       button.disabled = true;
 
-      // Re-enable button after a short delay for demo (not 24 hours)
+      // Re-enable button tomorrow (midnight reset)
+      const now = new Date();
+      const tomorrow = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate() + 1,
+      );
+      const timeUntilMidnight = tomorrow - now;
+
       setTimeout(() => {
         button.innerHTML =
           '<i class="fas fa-check-circle"></i> I showed up today!';
         button.style.background = "linear-gradient(135deg, #ff6b6b, #ffa726)";
         button.disabled = false;
-      }, 5000); // 5 seconds for testing instead of 24 hours
+        console.log("Button re-enabled for new day");
+      }, timeUntilMidnight);
     }
   }
 
@@ -914,7 +938,7 @@ class DailyStreak {
 }
 
 // ============================================
-// GOAL/HABIT SYSTEM
+// GOAL/HABIT SYSTEM - FIXED VERSION
 // ============================================
 
 class GoalTracker {
@@ -1005,7 +1029,7 @@ class GoalTracker {
       progressFillEl.style.width = `${Math.min(progressPercent, 100)}%`;
     }
 
-    // Update text - FIXED: Use correct IDs
+    // Update text
     const progressDaysEl = document.querySelector("#goalDisplay #progressDays");
     const totalDaysEl = document.querySelector("#goalDisplay #totalDays");
     const progressPercentEl = document.querySelector(
