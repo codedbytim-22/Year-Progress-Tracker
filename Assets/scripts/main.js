@@ -101,8 +101,9 @@ const YearProgressApp = {
     // Initialize UI elements
     APP_UI.initElements();
 
-    // Check for streak reset on load
+    // Check for streak resets on load
     APP_LOGIC.checkStreakReset();
+    APP_LOGIC.checkGoalStreakReset(); // ✅ NEW: Check goal streak reset
 
     // Set version info
     if (APP_UI.elements.versionInfo) {
@@ -116,7 +117,7 @@ const YearProgressApp = {
     this.updateAllDisplays();
     APP_UI.updateCheckInButton();
     APP_UI.updateGoalDisplay();
-    APP_UI.updateStreakDisplay(); // ADDED: Initialize streak display
+    APP_UI.updateStreakDisplay();
     APP_UI.showWelcomeMessage();
 
     // Start update interval
@@ -173,7 +174,7 @@ const YearProgressApp = {
     }
   },
 
-  // Handle check-in - FIXED: Immediate updates and better button text
+  // Handle check-in
   handleCheckIn() {
     console.log("Handling check-in...");
 
@@ -182,16 +183,16 @@ const YearProgressApp = {
     if (result.success) {
       console.log("Check-in successful, new streak:", result.streak);
 
-      // ✅ FIXED: Update streak count IMMEDIATELY
+      // ✅ Update streak count IMMEDIATELY
       APP_UI.updateStreakDisplay();
 
-      // ✅ FIXED: Update button text to "Showed up today!"
+      // ✅ Update button text to "Showed up today!"
       APP_UI.updateCheckInButton();
 
-      // ✅ FIXED: Show success message
+      // ✅ Show success message
       APP_UI.showStreakMessage(result.message);
 
-      // ✅ FIXED: Animate button
+      // ✅ Animate button
       if (APP_UI.elements.checkInButton) {
         APP_UI.elements.checkInButton.classList.add("check-in-pulse");
         setTimeout(() => {
@@ -210,18 +211,42 @@ const YearProgressApp = {
 
   // Handle goal progress
   handleGoalProgress() {
+    console.log("Handling goal progress...");
+
     const result = APP_LOGIC.processGoalProgress();
 
     if (result.success) {
-      APP_UI.showGoalMessage(result.message);
+      console.log(
+        "Goal progress successful, progress:",
+        result.progressDays,
+        "streak:",
+        result.goalStreak,
+      );
+
+      // ✅ Update goal display IMMEDIATELY
       APP_UI.updateGoalDisplay();
 
-      // Animate button
+      // ✅ Show success message
+      APP_UI.showGoalMessage(result.message);
+
+      // ✅ Check and show goal streak warning
+      APP_UI.checkGoalStreakWarning();
+
+      // ✅ Animate button
       if (APP_UI.elements.progressButton) {
         APP_UI.elements.progressButton.classList.add("check-in-pulse");
         setTimeout(() => {
           APP_UI.elements.progressButton.classList.remove("check-in-pulse");
         }, 500);
+      }
+
+      // ✅ If goal was reset, show special message
+      if (result.message.includes("reset to 0")) {
+        APP_UI.showGoalMessage(
+          "💔 Progress reset! Track daily to build a streak and avoid resets.",
+          false,
+          8000,
+        );
       }
     } else {
       APP_UI.showGoalMessage(result.message, true);
@@ -254,6 +279,15 @@ const YearProgressApp = {
     if (result.success) {
       APP_UI.showGoalMessage(result.message);
       APP_UI.updateGoalDisplay();
+
+      // ✅ Show goal streak rules explanation
+      setTimeout(() => {
+        APP_UI.showGoalMessage(
+          "📢 Goal Streak Rules: Track progress EVERY day. Miss a day = progress resets to 0!",
+          false,
+          10000,
+        );
+      }, 2000);
     }
   },
 
@@ -294,6 +328,17 @@ const YearProgressApp = {
   startUpdates() {
     this.updateInterval = setInterval(() => {
       this.updateAllDisplays();
+
+      // ✅ Periodically check goal streak warnings
+      const now = new Date();
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+
+      // Check at specific times (e.g., evening) to remind users
+      if (hours === 20 && minutes === 0) {
+        // 8:00 PM
+        APP_UI.checkGoalStreakWarning();
+      }
     }, CONFIG.UPDATE_INTERVAL);
   },
 

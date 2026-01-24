@@ -1,22 +1,9 @@
-// Assets/scripts/state.js
+// Assets/scripts/state.js - UPDATED
 
 const APP_STATE = {
-  // Theme state
-  theme:
-    localStorage.getItem("yearProgressTheme") ||
-    (window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light"),
+  // ... (existing theme and streak state) ...
 
-  // Streak state schema
-  streak: {
-    count: 0,
-    lastCheckIn: null, // "YYYY-MM-DD"
-    checkIns: {}, // "YYYY-MM-DD": level
-    longestStreak: 0,
-  },
-
-  // Goal state schema
+  // Goal state schema - UPDATED
   goal: {
     title: "",
     startDate: null, // "YYYY-MM-DD"
@@ -24,36 +11,14 @@ const APP_STATE = {
     totalDays: 90,
     checkIns: {}, // "YYYY-MM-DD": true
     completed: false,
+    lastProgressDate: null, // "YYYY-MM-DD" - NEW: Track last progress date
+    goalStreak: 0, // NEW: Goal streak counter
+    longestGoalStreak: 0, // NEW: Longest goal streak
   },
 
-  // Initialize from localStorage
-  init() {
-    this.loadStreak();
-    this.loadGoal();
-  },
+  // ... (existing initialization and loading methods) ...
 
-  // Streak methods
-  loadStreak() {
-    try {
-      const saved = localStorage.getItem("yearProgress_streak");
-      if (saved) {
-        const data = JSON.parse(saved);
-        this.streak = { ...this.streak, ...data };
-      }
-    } catch (e) {
-      console.error("Error loading streak:", e);
-    }
-  },
-
-  saveStreak() {
-    try {
-      localStorage.setItem("yearProgress_streak", JSON.stringify(this.streak));
-    } catch (e) {
-      console.error("Error saving streak:", e);
-    }
-  },
-
-  // Goal methods
+  // Goal methods - UPDATED
   loadGoal() {
     try {
       const saved = localStorage.getItem("yearProgress_goal");
@@ -74,42 +39,5 @@ const APP_STATE = {
     }
   },
 
-  // Theme methods
-  saveTheme() {
-    localStorage.setItem("yearProgressTheme", this.theme);
-  },
-
-  // Helper to format date as YYYY-MM-DD
-  formatDate(date) {
-    return date.toISOString().split("T")[0];
-  },
-
-  // Get today's date string
-  getToday() {
-    return this.formatDate(new Date());
-  },
-
-  // Get yesterday's date string
-  getYesterday() {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    return this.formatDate(yesterday);
-  },
-
-  // Check if date is today
-  isToday(dateStr) {
-    return dateStr === this.getToday();
-  },
-
-  // Check if date is yesterday
-  isYesterday(dateStr) {
-    return dateStr === this.getYesterday();
-  },
-
-  // Calculate days between two date strings
-  daysBetween(dateStr1, dateStr2) {
-    const date1 = new Date(dateStr1);
-    const date2 = new Date(dateStr2);
-    return Math.floor((date2 - date1) / (1000 * 60 * 60 * 24));
-  },
+  // ... (existing utility methods) ...
 };
