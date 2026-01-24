@@ -7,7 +7,7 @@
       name="description"
       content="Year Progress Tracker - Visualize how far into the year we are"
     />
-    <title>Year Progress Tracker</title>
+    <title>DAYLY - Time Awareness & Progress Tracker</title>
     <link rel="stylesheet" href="Assets/styles/styles.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -41,7 +41,7 @@
   </head>
   <body>
     <div class="container">
-      <!-- Theme Toggle with Pull Chain Light Bulb --><!-- Sophisticated Background Layers -->
+      <!-- Theme Toggle with Pull Chain Light Bulb -->
       <div class="grid-layer"></div>
       <div class="time-pulse"></div>
       <div class="data-streams"></div>
@@ -153,10 +153,19 @@
             </div>
           </div>
 
-          <!-- Action Button -->
+          <!-- Action Buttons -->
           <button class="streak-button" id="checkInButton">
             <i class="fas fa-check-circle"></i>
             I showed up today!
+          </button>
+
+          <button
+            class="streak-button secondary"
+            id="goalCheckInButton"
+            style="display: none; margin-top: 10px"
+          >
+            <i class="fas fa-bullseye"></i>
+            I worked toward my goal!
           </button>
 
           <div class="streak-message" id="streakMessage"></div>
@@ -185,8 +194,9 @@
                 ></div>
               </div>
               <div class="progress-text">
-                <span id="progressDays">0</span> /
-                <span id="totalDays">0</span> days (<span id="progressPercent"
+                <span id="goalProgressDays">0</span> /
+                <span id="goalTotalDays">0</span> days (<span
+                  id="goalProgressPercent"
                   >0%</span
                 >)
               </div>
@@ -195,15 +205,17 @@
             <div class="goal-details">
               <div class="detail-item">
                 <i class="fas fa-calendar-check"></i>
-                <span>Started: <span id="startDate">-</span></span>
+                <span>Started: <span id="goalStartDate">-</span></span>
               </div>
               <div class="detail-item">
                 <i class="fas fa-hourglass-half"></i>
-                <span>Remaining: <span id="daysRemaining">-</span> days</span>
+                <span
+                  >Remaining: <span id="goalDaysRemaining">-</span> days</span
+                >
               </div>
               <div class="detail-item">
                 <i class="fas fa-tachometer-alt"></i>
-                <span>Pace: <span id="completionDate">-</span></span>
+                <span>Target: <span id="goalCompletionDate">-</span></span>
               </div>
             </div>
           </div>
@@ -218,6 +230,13 @@
                 placeholder="What do you want to achieve?"
                 maxlength="50"
               />
+              <textarea
+                id="goalDescription"
+                class="goal-description"
+                placeholder="Why is this goal important to you? (Optional)"
+                maxlength="200"
+                rows="2"
+              ></textarea>
               <div class="duration-selector">
                 <label>Duration:</label>
                 <select id="goalDuration">
@@ -290,8 +309,8 @@
       <!--Footer-->
       <footer class="footer">
         <p class="footer-text">
-          Year Progress Tracker •
-          <span id="versionInfo">v1.0.0</span> •
+          DAYLY Progress Tracker •
+          <span id="versionInfo">v1.3.0</span> •
           <span id="currentYear">2026</span>
         </p>
         <p class="footer-note">
@@ -301,7 +320,6 @@
       </footer>
     </div>
 
-    <!-- In your index.html, replace the script tags with: -->
     <script src="Assets/scripts/scripts.js"></script>
   </body>
 </html>

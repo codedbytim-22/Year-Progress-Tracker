@@ -1,7 +1,7 @@
 {
-  "name": "Year Progress Tracker",
-  "short_name": "YearProgress",
-  "description": "Visualize the passage of time with real-time year progress tracking",
+  "name": "DAYLY Progress Tracker",
+  "short_name": "DAYLY",
+  "description": "Visualize time and track daily progress with streaks and goals",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f172a",
@@ -14,7 +14,8 @@
       "purpose": "any"
     }
   ],
-  "categories": ["productivity", "utilities"],
+  "categories": ["productivity", "utilities", "health", "lifestyle"],
   "lang": "en",
-  "orientation": "portrait-primary"
+  "orientation": "portrait-primary",
+  "scope": "/"
 }

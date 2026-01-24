@@ -582,7 +582,9 @@ body {
 /* Card Styles - Enhanced with subtle glow */
 .datetime-section,
 .progress-section,
-.season-section {
+.season-section,
+.streak-card,
+.goal-card {
   background: var(--bg-card);
   backdrop-filter: blur(20px);
   border-radius: var(--border-radius);
@@ -595,7 +597,9 @@ body {
 
 .datetime-section::before,
 .progress-section::before,
-.season-section::before {
+.season-section::before,
+.streak-card::before,
+.goal-card::before {
   content: "";
   position: absolute;
   top: 0;
@@ -608,7 +612,9 @@ body {
 
 .datetime-section:hover,
 .progress-section:hover,
-.season-section:hover {
+.season-section:hover,
+.streak-card:hover,
+.goal-card:hover {
   transform: translateY(-5px) scale(1.005);
   box-shadow:
     var(--box-shadow-lg),
@@ -923,202 +929,10 @@ body {
 }
 
 /* ============================================
-   RESPONSIVE DESIGN
+   STREAK CARD ENHANCEMENTS
    ============================================ */
-
-@media (max-width: 768px) {
-  .container {
-    padding: var(--spacing-sm);
-  }
-
-  .theme-toggle-container {
-    top: var(--spacing-md);
-    right: var(--spacing-md);
-  }
-
-  /* Reduce animation intensity on mobile */
-  .grid-layer {
-    animation-duration: 240s;
-    opacity: 0.3;
-  }
-
-  .data-stream {
-    width: 0.5px;
-    animation-duration: 40s;
-  }
-
-  .datetime-section {
-    grid-template-columns: 1fr;
-    gap: var(--spacing-md);
-    padding: var(--spacing-lg);
-  }
-
-  .date-container,
-  .time-container {
-    padding: var(--spacing-lg);
-  }
-
-  .progress-section,
-  .season-section {
-    padding: var(--spacing-lg);
-  }
-
-  .progress-details {
-    grid-template-columns: 1fr;
-  }
-
-  .current-season {
-    flex-direction: column;
-    text-align: center;
-    gap: var(--spacing-md);
-  }
-
-  .year-label {
-    font-size: 1.8rem;
-  }
-
-  .percentage-display {
-    font-size: 2.5rem;
-  }
-
-  .value {
-    font-size: 1.8rem;
-  }
-
-  .toggle-switch {
-    padding: var(--spacing-xs) var(--spacing-sm);
-  }
-
-  .toggle-switch span {
-    font-size: 0.75rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .header {
-    padding: var(--spacing-xl) var(--spacing-sm) var(--spacing-lg);
-  }
-
-  .progress-info {
-    flex-direction: column;
-    gap: var(--spacing-md);
-    text-align: center;
-  }
-
-  .progress-text {
-    font-size: 1.1rem;
-  }
-
-  .section-title {
-    font-size: 1.3rem;
-  }
-
-  .light-bulb {
-    width: 50px;
-    height: 50px;
-  }
-
-  .pull-chain {
-    height: 50px;
-  }
-
-  /* Further reduce animations on very small screens */
-  .time-pulse {
-    animation-duration: 120s;
-    opacity: 0.2;
-  }
-}
-
-/* ============================================
-   ANIMATIONS & EFFECTS
-   ============================================ */
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes glowPulse {
-  0%,
-  100% {
-    box-shadow: var(--bulb-glow);
-  }
-  50% {
-    box-shadow:
-      0 0 30px var(--bulb-on),
-      0 0 40px var(--bulb-on);
-  }
-}
-
-.header,
-.datetime-section,
-.progress-section,
-.season-section {
-  animation: fadeIn 0.6s ease-out forwards;
-}
-
-.datetime-section {
-  animation-delay: 0.1s;
-}
-
-.progress-section {
-  animation-delay: 0.2s;
-}
-
-.season-section {
-  animation-delay: 0.3s;
-}
-
-.light-bulb.on {
-  animation: glowPulse 2s infinite;
-}
-
-/* Performance optimization */
-@media (prefers-reduced-motion: reduce) {
-  .grid-layer,
-  .time-pulse,
-  .data-stream,
-  .particle,
-  .light-bulb.on {
-    animation: none !important;
-  }
-
-  .datetime-section:hover,
-  .progress-section:hover,
-  .season-section:hover {
-    transform: none;
-  }
-}
-
-/* Print styles */
-@media print {
-  .theme-toggle-container,
-  .grid-layer,
-  .time-pulse,
-  .data-streams,
-  .particles {
-    display: none !important;
-  }
-
-  body {
-    background: white !important;
-    color: black !important;
-  }
-}
-/* Streak Card */
 .streak-card {
-  background: var(--bg-card);
-  border-radius: var(--border-radius);
-  border: 1px solid var(--border-color);
   padding: var(--spacing-xl);
-  margin-bottom: var(--spacing-lg);
-  box-shadow: var(--box-shadow);
 }
 
 .card-header {
@@ -1156,12 +970,13 @@ body {
   font-size: 0.9rem;
 }
 
-/* GitHub-style grid */
+/* Enhanced Streak Grid */
 .streak-grid {
   display: flex;
   gap: 4px;
   margin: var(--spacing-lg) 0;
   flex-wrap: wrap;
+  justify-content: center;
 }
 
 .week {
@@ -1170,18 +985,24 @@ body {
 }
 
 .day-box {
-  width: 12px;
-  height: 12px;
-  border-radius: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
   background: var(--bg-secondary);
   transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
 }
 
 .day-box:hover {
   transform: scale(1.3);
+  z-index: 2;
 }
 
-/* Color levels */
+/* Color levels with better contrast */
 .day-box.level-0 {
   background: var(--bg-secondary);
 }
@@ -1196,6 +1017,23 @@ body {
 }
 .day-box.level-4 {
   background: #216e39;
+  color: white;
+}
+
+/* Current streak highlight */
+.day-box.current-streak-day {
+  box-shadow: 0 0 5px #ff6b6b;
+  animation: pulseStreak 2s infinite;
+}
+
+@keyframes pulseStreak {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
 }
 
 /* Legend */
@@ -1205,6 +1043,7 @@ body {
   gap: var(--spacing-lg);
   margin: var(--spacing-lg) 0;
   font-size: 0.85rem;
+  flex-wrap: wrap;
 }
 
 .legend-item {
@@ -1229,7 +1068,7 @@ body {
   background: #ff6b6b;
 }
 
-/* Button */
+/* Buttons */
 .streak-button {
   width: 100%;
   padding: var(--spacing-md);
@@ -1247,39 +1086,69 @@ body {
   transition: all 0.3s ease;
 }
 
-.streak-button:hover {
+.streak-button:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+}
+
+.streak-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
 }
 
 .streak-button:active {
   transform: translateY(0);
 }
 
-/* Message */
+/* Secondary check-in button */
+.streak-button.secondary {
+  background: linear-gradient(135deg, #4361ee, #3a0ca3) !important;
+}
+
+.streak-button.secondary:hover:not(:disabled) {
+  box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+}
+
+/* Message System */
 .streak-message {
   text-align: center;
   margin-top: var(--spacing-md);
   padding: var(--spacing-sm);
   border-radius: var(--border-radius-sm);
-  background: rgba(255, 107, 107, 0.1);
-  color: #ff6b6b;
   font-weight: 500;
   display: none;
+  transition: all 0.3s ease;
 }
 
 .streak-message.show {
   display: block;
   animation: fadeInUp 0.5s ease;
 }
-/* Goal Card */
+
+.streak-message.success {
+  background: rgba(64, 196, 99, 0.1);
+  color: #40c463;
+  border-left: 3px solid #40c463;
+}
+
+.streak-message.info {
+  background: rgba(67, 97, 238, 0.1);
+  color: #4361ee;
+  border-left: 3px solid #4361ee;
+}
+
+.streak-message.error {
+  background: rgba(255, 107, 107, 0.1);
+  color: #ff6b6b;
+  border-left: 3px solid #ff6b6b;
+}
+
+/* ============================================
+   GOAL CARD ENHANCEMENTS
+   ============================================ */
 .goal-card {
-  background: var(--bg-card);
-  border-radius: var(--border-radius);
-  border: 1px solid var(--border-color);
   padding: var(--spacing-xl);
-  margin-bottom: var(--spacing-lg);
-  box-shadow: var(--box-shadow);
 }
 
 .edit-goal {
@@ -1314,38 +1183,35 @@ body {
   margin: var(--spacing-lg) 0;
 }
 
-.progress-bar {
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, #4361ee, #4cc9f0, #00ff88);
-  border-radius: 14px;
-  transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-  position: relative;
+.goal-progress .progress-bar {
+  height: 12px;
+  border-radius: 6px;
+  background: var(--bg-secondary);
   overflow: hidden;
-  box-shadow:
-    0 0 20px rgba(67, 97, 238, 0.3),
-    0 0 10px rgba(76, 201, 240, 0.2);
-}
-
-/* Dark theme specific glow */
-[data-theme="dark"] .progress-bar {
-  box-shadow:
-    0 0 25px rgba(67, 97, 238, 0.4),
-    0 0 15px rgba(76, 201, 240, 0.3);
-}
-
-/* Light theme specific glow */
-[data-theme="light"] .progress-bar {
-  box-shadow:
-    0 0 15px rgba(67, 97, 238, 0.3),
-    0 0 8px rgba(76, 201, 240, 0.2);
 }
 
 .progress-fill {
   height: 100%;
   background: linear-gradient(90deg, #4361ee, #4cc9f0);
-  border-radius: 10px;
+  border-radius: 6px;
   transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Celebration animation for progress fill */
+.progress-fill.celebrating {
+  animation: progressCelebrate 1s ease;
+}
+
+@keyframes progressCelebrate {
+  0%,
+  100% {
+    transform: scaleX(1);
+  }
+  50% {
+    transform: scaleX(1.05);
+  }
 }
 
 .progress-text {
@@ -1353,6 +1219,7 @@ body {
   justify-content: space-between;
   font-size: 0.9rem;
   color: var(--text-muted);
+  margin-top: 8px;
 }
 
 .goal-details {
@@ -1402,6 +1269,28 @@ body {
 #goalInput:focus {
   outline: none;
   border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+/* Goal Description */
+.goal-description {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.95rem;
+  resize: vertical;
+  min-height: 60px;
+  transition: all var(--transition-fast);
+}
+
+.goal-description:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
 .duration-selector {
@@ -1420,6 +1309,7 @@ body {
   border-radius: var(--border-radius-sm);
   background: var(--bg-card);
   color: var(--text-primary);
+  flex: 1;
 }
 
 .save-goal {
@@ -1465,6 +1355,22 @@ body {
 .goal-action-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Check-in pulse animation */
+.check-in-pulse {
+  animation: checkInPulse 0.5s ease !important;
+}
+
+@keyframes checkInPulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
 }
 
 /* Motivational Message */
@@ -1472,11 +1378,10 @@ body {
   text-align: center;
   margin-top: var(--spacing-md);
   padding: var(--spacing-md);
-  background: rgba(67, 97, 238, 0.1);
   border-radius: var(--border-radius-sm);
-  color: var(--accent-color);
   font-weight: 500;
   display: none;
+  transition: all 0.3s ease;
 }
 
 .motivational-message.show {
@@ -1484,7 +1389,152 @@ body {
   animation: fadeInUp 0.5s ease;
 }
 
-/* Animations */
+.motivational-message.info {
+  background: rgba(67, 97, 238, 0.1);
+  color: var(--accent-color);
+  border-left: 3px solid var(--accent-color);
+}
+
+.motivational-message.error {
+  background: rgba(255, 107, 107, 0.1);
+  color: #ff6b6b;
+  border-left: 3px solid #ff6b6b;
+}
+
+.motivational-message.milestone {
+  background: linear-gradient(
+    135deg,
+    rgba(251, 191, 36, 0.1),
+    rgba(245, 158, 11, 0.1)
+  );
+  color: #fbbf24;
+  font-weight: 600;
+  border-left: 3px solid #fbbf24;
+}
+
+.motivational-message.celebration {
+  background: linear-gradient(
+    135deg,
+    rgba(67, 97, 238, 0.1),
+    rgba(76, 201, 240, 0.1)
+  );
+  color: #4361ee;
+  border-left: 3px solid #4361ee;
+  animation: celebrationPulse 1s infinite;
+}
+
+@keyframes celebrationPulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+.motivational-message.motivation {
+  background: linear-gradient(
+    135deg,
+    rgba(64, 196, 99, 0.1),
+    rgba(48, 161, 78, 0.1)
+  );
+  color: #40c463;
+  border-left: 3px solid #40c463;
+}
+
+/* ============================================
+   ENGAGEMENT LAYER ANIMATIONS
+   ============================================ */
+
+@keyframes subtleBounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes gentlePulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* Progress celebration */
+.progress-celebrated {
+  animation:
+    subtleBounce 0.5s ease,
+    gentlePulse 2s ease-in-out;
+}
+
+/* Daily achievement badge */
+.achievement-badge {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: var(--accent-color);
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  animation: subtleBounce 0.5s ease;
+}
+
+/* Weekly progress highlight */
+.week-complete {
+  position: relative;
+}
+
+.week-complete::after {
+  content: "✓";
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: var(--success-color);
+  color: white;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* Milestone animation */
+.milestone-reached {
+  animation: celebrationPulse 1s ease-in-out 3;
+}
+
+/* Confetti animation */
+@keyframes confettiFall {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(
+        calc(var(--distance) * cos(var(--angle)) * 1px),
+        calc(var(--distance) * sin(var(--angle)) * 1px)
+      )
+      rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* Common animations */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -1496,16 +1546,241 @@ body {
   }
 }
 
-@keyframes checkInPulse {
-  0%,
-  100% {
-    transform: scale(1);
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 768px) {
+  .container {
+    padding: var(--spacing-sm);
   }
-  50% {
-    transform: scale(1.1);
+
+  .theme-toggle-container {
+    top: var(--spacing-md);
+    right: var(--spacing-md);
+  }
+
+  /* Reduce animation intensity on mobile */
+  .grid-layer {
+    animation-duration: 240s;
+    opacity: 0.3;
+  }
+
+  .data-stream {
+    width: 0.5px;
+    animation-duration: 40s;
+  }
+
+  .datetime-section {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+  }
+
+  .date-container,
+  .time-container {
+    padding: var(--spacing-lg);
+  }
+
+  .progress-section,
+  .season-section,
+  .streak-card,
+  .goal-card {
+    padding: var(--spacing-lg);
+  }
+
+  .progress-details {
+    grid-template-columns: 1fr;
+  }
+
+  .current-season {
+    flex-direction: column;
+    text-align: center;
+    gap: var(--spacing-md);
+  }
+
+  .year-label {
+    font-size: 1.8rem;
+  }
+
+  .percentage-display {
+    font-size: 2.5rem;
+  }
+
+  .value {
+    font-size: 1.8rem;
+  }
+
+  .toggle-switch {
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+
+  .toggle-switch span {
+    font-size: 0.75rem;
+  }
+
+  .streak-legend {
+    gap: var(--spacing-md);
+    font-size: 0.8rem;
+  }
+
+  .goal-details {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-sm);
+  }
+
+  .duration-selector {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
   }
 }
 
-.check-in-pulse {
-  animation: checkInPulse 0.5s ease;
+@media (max-width: 480px) {
+  .header {
+    padding: var(--spacing-xl) var(--spacing-sm) var(--spacing-lg);
+  }
+
+  .progress-info {
+    flex-direction: column;
+    gap: var(--spacing-md);
+    text-align: center;
+  }
+
+  .progress-text {
+    font-size: 1.1rem;
+  }
+
+  .section-title {
+    font-size: 1.3rem;
+  }
+
+  .light-bulb {
+    width: 50px;
+    height: 50px;
+  }
+
+  .pull-chain {
+    height: 50px;
+  }
+
+  .streak-grid {
+    gap: 3px;
+  }
+
+  .day-box {
+    width: 12px;
+    height: 12px;
+  }
+
+  .streak-button,
+  .goal-action-button {
+    font-size: 1rem;
+    padding: var(--spacing-sm);
+  }
+
+  /* Further reduce animations on very small screens */
+  .time-pulse {
+    animation-duration: 120s;
+    opacity: 0.2;
+  }
+}
+
+/* ============================================
+   ANIMATIONS & EFFECTS
+   ============================================ */
+
+.header,
+.datetime-section,
+.progress-section,
+.season-section,
+.streak-card,
+.goal-card {
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+.datetime-section {
+  animation-delay: 0.1s;
+}
+
+.progress-section {
+  animation-delay: 0.2s;
+}
+
+.streak-card {
+  animation-delay: 0.3s;
+}
+
+.goal-card {
+  animation-delay: 0.4s;
+}
+
+.season-section {
+  animation-delay: 0.5s;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes glowPulse {
+  0%,
+  100% {
+    box-shadow: var(--bulb-glow);
+  }
+  50% {
+    box-shadow:
+      0 0 30px var(--bulb-on),
+      0 0 40px var(--bulb-on);
+  }
+}
+
+.light-bulb.on {
+  animation: glowPulse 2s infinite;
+}
+
+/* Performance optimization */
+@media (prefers-reduced-motion: reduce) {
+  .grid-layer,
+  .time-pulse,
+  .data-stream,
+  .particle,
+  .light-bulb.on,
+  .day-box.current-streak-day,
+  .progress-fill.celebrating,
+  .check-in-pulse,
+  .milestone-reached {
+    animation: none !important;
+  }
+
+  .datetime-section:hover,
+  .progress-section:hover,
+  .season-section:hover,
+  .streak-card:hover,
+  .goal-card:hover {
+    transform: none;
+  }
+}
+
+/* Print styles */
+@media print {
+  .theme-toggle-container,
+  .grid-layer,
+  .time-pulse,
+  .data-streams,
+  .particles {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
 }
