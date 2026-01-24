@@ -184,21 +184,19 @@ const YearProgressApp = {
       console.log("Check-in successful, new streak:", result.streak);
 
       // ✅ Update streak count IMMEDIATELY
-      APP_UI.updateStreakDisplay();
-
-      // ✅ Update button text to "Showed up today!"
-      APP_UI.updateCheckInButton();
-
-      // ✅ Show success message
-      APP_UI.showStreakMessage(result.message);
-
-      // ✅ Animate button
-      if (APP_UI.elements.checkInButton) {
-        APP_UI.elements.checkInButton.classList.add("check-in-pulse");
-        setTimeout(() => {
-          APP_UI.elements.checkInButton.classList.remove("check-in-pulse");
-        }, 500);
-      }
+     updateStreakDisplay(state) {
+  console.log("Updating streak display, count:", state.streak.count);
+  
+  if (this.elements.streakCount) {
+    // ✅ FIXED: Simple fix - just show the number
+    this.elements.streakCount.textContent = state.streak.count;
+    console.log("Streak count updated to:", state.streak.count);
+  } else {
+    console.error("streakCount element not found!");
+  }
+  
+  this.updateStreakGrid(state);
+},
 
       console.log(
         "UI updated, streak count should now be:",
