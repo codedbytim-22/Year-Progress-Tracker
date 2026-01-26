@@ -274,6 +274,182 @@
 
           <div class="motivational-message" id="motivationalMessage"></div>
         </section>
+        <!-- Add this right after the Goal Card -->
+<section class="premium-features-card">
+  <div class="card-header">
+    <h2 class="card-title">
+      <i class="fas fa-crown premium-icon"></i>
+      Premium Features
+    </h2>
+    <span class="premium-badge">Coming Soon</span>
+  </div>
+  
+  <div class="premium-features-list">
+    <!-- Multiple Goals Feature -->
+    <div class="premium-feature" data-feature="multiple_goals">
+      <div class="feature-icon">
+        <i class="fas fa-bullseye"></i>
+      </div>
+      <div class="feature-info">
+        <h3>Multiple Goals</h3>
+        <p>Track fitness, learning, and work goals simultaneously</p>
+      </div>
+      <button class="premium-lock" data-action="add_goal">
+        <i class="fas fa-lock"></i>
+        <span>Free: 1 goal</span>
+      </button>
+    </div>
+    
+    <!-- Yearly Wrapped Feature -->
+    <div class="premium-feature" data-feature="yearly_wrapped">
+      <div class="feature-icon">
+        <i class="fas fa-gift"></i>
+      </div>
+      <div class="feature-info">
+        <h3>Yearly Wrapped</h3>
+        <p>See your year in review with beautiful shareable summaries</p>
+      </div>
+      <button class="premium-lock" data-action="view_wrapped">
+        <i class="fas fa-lock"></i>
+        <span>Premium</span>
+      </button>
+    </div>
+    
+    <!-- Advanced Analytics Feature -->
+    <div class="premium-feature" data-feature="analytics">
+      <div class="feature-icon">
+        <i class="fas fa-chart-line"></i>
+      </div>
+      <div class="feature-info">
+        <h3>Advanced Analytics</h3>
+        <p>Consistency scores, patterns, and productivity insights</p>
+      </div>
+      <button class="premium-lock" data-action="view_analytics">
+        <i class="fas fa-lock"></i>
+        <span>Premium</span>
+      </button>
+    </div>
+    
+    <!-- Export Feature -->
+    <div class="premium-feature" data-feature="export">
+      <div class="feature-icon">
+        <i class="fas fa-download"></i>
+      </div>
+      <div class="feature-info">
+        <h3>Export & Share</h3>
+        <p>Download your data and create shareable progress cards</p>
+      </div>
+      <button class="premium-lock" data-action="export_data">
+        <i class="fas fa-lock"></i>
+        <span>Premium</span>
+      </button>
+    </div>
+    
+    <!-- Cloud Sync Feature -->
+    <div class="premium-feature" data-feature="cloud_sync">
+      <div class="feature-icon">
+        <i class="fas fa-cloud"></i>
+      </div>
+      <div class="feature-info">
+        <h3>Cloud Sync</h3>
+        <p>Access your progress anywhere, across all devices</p>
+      </div>
+      <button class="premium-lock" data-action="enable_sync">
+        <i class="fas fa-lock"></i>
+        <span>Premium</span>
+      </button>
+    </div>
+  </div>
+  
+  <div class="premium-cta">
+    <p class="premium-note">
+      <i class="fas fa-rocket"></i>
+      Premium features launching soon. Be among the first!
+    </p>
+  </div>
+</section>
+
+<!-- Premium Modal (similar structure to feedback modal) -->
+<div class="premium-modal" id="premiumModal">
+  <div class="premium-modal-content">
+    <button class="close-modal" id="closePremiumModal">&times;</button>
+    
+    <div class="premium-header">
+      <div class="crown-icon">
+        <i class="fas fa-crown"></i>
+      </div>
+      <h2>Unlock Premium Features</h2>
+      <p class="premium-subtitle">You're exploring a premium feature</p>
+    </div>
+    
+    <div class="premium-feature-highlight" id="premiumFeatureHighlight">
+      <!-- Dynamic content based on which feature was clicked -->
+    </div>
+    
+    <div class="premium-benefits">
+      <h3>With Premium, you'll get:</h3>
+      <ul class="benefits-list">
+        <li><i class="fas fa-check-circle"></i> <strong>Multiple Goals</strong> - Track all areas of your life</li>
+        <li><i class="fas fa-check-circle"></i> <strong>Yearly Wrapped</strong> - Beautiful shareable summaries</li>
+        <li><i class="fas fa-check-circle"></i> <strong>Advanced Analytics</strong> - Deep insights & patterns</li>
+        <li><i class="fas fa-check-circle"></i> <strong>Export & Share</strong> - Download & share progress</li>
+        <li><i class="fas fa-check-circle"></i> <strong>Cloud Sync</strong> - Access anywhere, any device</li>
+        <li><i class="fas fa-check-circle"></i> <strong>Priority Support</strong> - Faster help when needed</li>
+      </ul>
+    </div>
+    
+    <div class="premium-actions">
+      <div class="waitlist-section" id="waitlistSection">
+        <p><strong>Premium is launching soon!</strong> Join the waitlist to be among the first.</p>
+        <div class="waitlist-form">
+          <input 
+            type="email" 
+            id="waitlistEmail" 
+            placeholder="your.email@example.com"
+            disabled
+          >
+          <button class="waitlist-btn" id="joinWaitlistBtn" disabled>
+            <i class="fas fa-bell"></i>
+            Join Waitlist (Coming Soon)
+          </button>
+        </div>
+        <small class="waitlist-note">
+          We'll notify you when Premium launches. No spam, ever.
+        </small>
+      </div>
+      
+      <div class="modal-buttons">
+        <button class="cancel-btn" id="cancelPremium">
+          Maybe Later
+        </button>
+        <button class="remind-btn" id="remindMeBtn">
+          <i class="fas fa-star"></i>
+          Remind Me
+        </button>
+      </div>
+    </div>
+    
+    <div class="premium-footer">
+      <p class="price-note">
+        <i class="fas fa-tag"></i>
+        Expected: <strong>$4.99/month</strong> or <strong>$49.99/year</strong> (50% off)
+      </p>
+      <p class="free-forever">
+        <i class="fas fa-heart"></i>
+        The free version will always remain free with core features
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Add Premium button to header/navigation -->
+<div class="premium-indicator">
+  <button class="premium-pill" id="premiumPillBtn">
+    <i class="fas fa-crown"></i>
+    <span>Premium</span>
+    <span class="pill-badge">Soon</span>
+  </button>
+</div>
         <!--Seasons-->
         <section class="season-section">
           <h2 class="section-title">
@@ -341,7 +517,7 @@
         <div class="feedback-header">
           <h2><i class="fas fa-comment-alt"></i> Share Your Feedback</h2>
           <p class="feedback-subtitle">
-            Your thoughts help us improve DAYLY for everyone
+            Your thoughts help us improve Dayly for everyone
           </p>
         </div>
 

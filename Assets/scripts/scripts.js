@@ -23,7 +23,7 @@ const toggleSwitch = document.querySelector(".toggle-switch");
 
 // App Configuration
 const CONFIG = {
-  VERSION: "1.3.0",
+  VERSION: "1.4.0", // Updated version for premium features
   UPDATE_INTERVAL: 1000,
   PERFORMANCE: {
     THROTTLE_ANIMATIONS: true,
@@ -125,7 +125,421 @@ const CONFIG = {
       window.location.hostname === "localhost" ||
       window.location.hostname === "127.0.0.1",
   },
+
+  // NEW: Premium Configuration
+  PREMIUM: {
+    // Limits for free tier
+    FREE_LIMITS: {
+      MAX_GOALS: 1,
+      MAX_EXPORTS: 0,
+      HAS_WRAPPED: false,
+      HAS_ANALYTICS: false,
+      HAS_CLOUD_SYNC: false,
+      HAS_CUSTOM_THEMES: false,
+    },
+
+    // Premium tier limits (for future)
+    PREMIUM_LIMITS: {
+      MAX_GOALS: Infinity,
+      MAX_EXPORTS: Infinity,
+      HAS_WRAPPED: true,
+      HAS_ANALYTICS: true,
+      HAS_CLOUD_SYNC: true,
+      HAS_CUSTOM_THEMES: true,
+    },
+
+    // Fake door settings
+    FAKE_DOOR: {
+      ENABLED: true,
+      TRACK_CLICKS: true,
+      SHOW_WAITLIST: true,
+    },
+
+    // Storage keys
+    STORAGE_KEYS: {
+      CLICKS: "dayly_premium_clicks",
+      WAITLIST: "dayly_premium_waitlist",
+      REMINDERS: "dayly_premium_reminders",
+    },
+  },
 };
+
+// ============================================
+// DATA SAFETY HELPER FUNCTIONS
+// ============================================
+
+function ensureDataSafety(storageKey, defaultValue) {
+  try {
+    const existing = localStorage.getItem(storageKey);
+    if (!existing || existing === "undefined" || existing === "null") {
+      localStorage.setItem(storageKey, JSON.stringify(defaultValue));
+      return defaultValue;
+    }
+    return JSON.parse(existing);
+  } catch (e) {
+    console.error(`Data safety error for ${storageKey}:`, e);
+    // Never reset existing data on error
+    try {
+      const existing = localStorage.getItem(storageKey);
+      if (existing) return JSON.parse(existing);
+    } catch (e2) {
+      // Last resort: use default but don't overwrite storage
+      return defaultValue;
+    }
+    return defaultValue;
+  }
+}
+
+function safeVersionUpdate() {
+  const currentVersion = CONFIG.VERSION;
+  const storedVersion = localStorage.getItem("dayly_app_version");
+
+  // If no version stored or version is different, update
+  if (!storedVersion || storedVersion !== currentVersion) {
+    console.log(
+      `Updating app version from ${storedVersion || "none"} to ${currentVersion}`,
+    );
+
+    // Store current version
+    localStorage.setItem("dayly_app_version", currentVersion);
+
+    // You can add version-specific migrations here if needed
+    // For example: migrate data from v1.3.0 to v1.4.0
+
+    // Track this as an update event
+    const updates = ensureDataSafety("dayly_app_updates", []);
+    updates.push({
+      fromVersion: storedVersion,
+      toVersion: currentVersion,
+      timestamp: Date.now(),
+    });
+
+    // Keep only last 10 updates
+    if (updates.length > 10) {
+      updates.splice(0, updates.length - 10);
+    }
+
+    localStorage.setItem("dayly_app_updates", JSON.stringify(updates));
+  }
+}
+
+// ============================================
+// PREMIUM FAKE-DOOR SYSTEM
+// ============================================
+
+class PremiumSystem {
+  constructor() {
+    this.modal = document.getElementById("premiumModal");
+    this.closeButton = document.getElementById("closePremiumModal");
+    this.cancelButton = document.getElementById("cancelPremium");
+    this.remindButton = document.getElementById("remindMeBtn");
+    this.premiumPill = document.getElementById("premiumPillBtn");
+    this.featureHighlight = document.getElementById("premiumFeatureHighlight");
+    this.currentFeature = null;
+
+    this.init();
+  }
+
+  init() {
+    this.setupEventListeners();
+    this.setupPremiumLockButtons();
+    this.updateGoalLimitDisplay();
+  }
+
+  setupEventListeners() {
+    // Modal close button
+    if (this.closeButton) {
+      this.closeButton.addEventListener("click", () => this.closeModal());
+    }
+
+    // Cancel button
+    if (this.cancelButton) {
+      this.cancelButton.addEventListener("click", () => this.closeModal());
+    }
+
+    // Remind me button
+    if (this.remindButton) {
+      this.remindButton.addEventListener("click", () => this.handleRemindMe());
+    }
+
+    // Premium pill button
+    if (this.premiumPill) {
+      this.premiumPill.addEventListener("click", () =>
+        this.showPremiumModal("premium_overview"),
+      );
+    }
+
+    // Close modal when clicking outside
+    if (this.modal) {
+      this.modal.addEventListener("click", (e) => {
+        if (e.target === this.modal) {
+          this.closeModal();
+        }
+      });
+    }
+
+    // Close on Escape key
+    document.addEventListener("keydown", (e) => {
+      if (
+        e.key === "Escape" &&
+        this.modal &&
+        this.modal.style.display === "flex"
+      ) {
+        this.closeModal();
+      }
+    });
+  }
+
+  setupPremiumLockButtons() {
+    // All premium lock buttons
+    const lockButtons = document.querySelectorAll(".premium-lock");
+
+    lockButtons.forEach((button) => {
+      button.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const feature = button.closest(".premium-feature")?.dataset.feature;
+        const action = button.dataset.action;
+
+        this.handlePremiumClick(feature, action);
+      });
+    });
+  }
+
+  handlePremiumClick(feature, action) {
+    // Track the click
+    this.trackPremiumClick(feature, action);
+
+    // Show premium modal with feature-specific content
+    this.showPremiumModal(feature, action);
+  }
+
+  trackPremiumClick(feature, action) {
+    if (!CONFIG.PREMIUM.FAKE_DOOR.TRACK_CLICKS) return;
+
+    const clicks = ensureDataSafety(CONFIG.PREMIUM.STORAGE_KEYS.CLICKS, []);
+
+    clicks.push({
+      feature: feature,
+      action: action,
+      timestamp: Date.now(),
+      userAgent: navigator.userAgent.substring(0, 100),
+      version: CONFIG.VERSION,
+      path: window.location.pathname,
+    });
+
+    // Keep only last 100 clicks
+    if (clicks.length > 100) {
+      clicks.splice(0, clicks.length - 100);
+    }
+
+    localStorage.setItem(
+      CONFIG.PREMIUM.STORAGE_KEYS.CLICKS,
+      JSON.stringify(clicks),
+    );
+
+    console.log(
+      `Premium click tracked: ${feature}/${action} (Total: ${clicks.length})`,
+    );
+  }
+
+  showPremiumModal(feature, action = "") {
+    this.currentFeature = feature;
+
+    // Update modal content based on feature
+    this.updateFeatureHighlight(feature, action);
+
+    // Show modal
+    if (this.modal) {
+      this.modal.style.display = "flex";
+      document.body.style.overflow = "hidden";
+
+      // Animate in
+      setTimeout(() => {
+        this.modal.classList.add("show");
+      }, 10);
+    }
+  }
+
+  updateFeatureHighlight(feature, action) {
+    if (!this.featureHighlight) return;
+
+    const featureData = this.getFeatureData(feature);
+
+    let html = `
+      <div class="feature-icon-large">
+        <i class="${featureData.icon}"></i>
+      </div>
+      <h3>${featureData.title}</h3>
+      <p class="feature-description">${featureData.description}</p>
+    `;
+
+    if (action === "add_goal" && window.enhancedGoalTracker) {
+      const currentGoals = window.enhancedGoalTracker.data.goals?.length || 1; // Default to 1 for backward compatibility
+      const maxGoals = CONFIG.PREMIUM.FREE_LIMITS.MAX_GOALS;
+
+      html += `
+        <div class="feature-limit">
+          <i class="fas fa-chart-bar"></i>
+          <span>Free: ${currentGoals}/${maxGoals} goals used</span>
+        </div>
+      `;
+    }
+
+    this.featureHighlight.innerHTML = html;
+  }
+
+  getFeatureData(feature) {
+    const features = {
+      multiple_goals: {
+        title: "Multiple Goals",
+        description:
+          "Track multiple areas of your life simultaneously - fitness, learning, career, and personal growth.",
+        icon: "fas fa-bullseye",
+      },
+      yearly_wrapped: {
+        title: "Yearly Wrapped",
+        description:
+          "Get a beautiful summary of your year with insights, patterns, and shareable graphics.",
+        icon: "fas fa-gift",
+      },
+      analytics: {
+        title: "Advanced Analytics",
+        description:
+          "Deep insights into your consistency patterns, productivity trends, and goal achievement rates.",
+        icon: "fas fa-chart-line",
+      },
+      export: {
+        title: "Export & Share",
+        description:
+          "Download your data in multiple formats and create beautiful shareable progress cards.",
+        icon: "fas fa-download",
+      },
+      cloud_sync: {
+        title: "Cloud Sync",
+        description:
+          "Access your progress from any device. Your data stays in sync automatically.",
+        icon: "fas fa-cloud",
+      },
+      premium_overview: {
+        title: "Premium Features",
+        description:
+          "Unlock the full potential of Dayly with advanced tracking, insights, and multi-device support.",
+        icon: "fas fa-crown",
+      },
+    };
+
+    return features[feature] || features.premium_overview;
+  }
+
+  handleRemindMe() {
+    // Store remind me preference
+    const reminders = ensureDataSafety(
+      CONFIG.PREMIUM.STORAGE_KEYS.REMINDERS,
+      [],
+    );
+
+    reminders.push({
+      timestamp: Date.now(),
+      feature: this.currentFeature,
+      reminded: true,
+      appVersion: CONFIG.VERSION,
+    });
+
+    localStorage.setItem(
+      CONFIG.PREMIUM.STORAGE_KEYS.REMINDERS,
+      JSON.stringify(reminders),
+    );
+
+    // Show confirmation
+    const remindButton = this.remindButton;
+    if (remindButton) {
+      const originalHTML = remindButton.innerHTML;
+      remindButton.innerHTML =
+        '<i class="fas fa-check"></i> We\'ll remind you!';
+      remindButton.disabled = true;
+
+      setTimeout(() => {
+        remindButton.innerHTML = originalHTML;
+        remindButton.disabled = false;
+      }, 3000);
+    }
+
+    // Close modal after a delay
+    setTimeout(() => {
+      this.closeModal();
+    }, 1500);
+  }
+
+  closeModal() {
+    if (this.modal) {
+      this.modal.classList.remove("show");
+
+      setTimeout(() => {
+        this.modal.style.display = "none";
+        document.body.style.overflow = "auto";
+      }, 300);
+    }
+  }
+
+  updateGoalLimitDisplay() {
+    // Update the premium lock button text to show current goal count
+    const lockButton = document.querySelector('[data-action="add_goal"]');
+    if (!lockButton) return;
+
+    // Get current goal count
+    let currentGoals = 1; // Default for backward compatibility
+
+    if (window.enhancedGoalTracker && window.enhancedGoalTracker.data) {
+      // Check if using new array format
+      if (
+        window.enhancedGoalTracker.data.goals &&
+        Array.isArray(window.enhancedGoalTracker.data.goals)
+      ) {
+        currentGoals = window.enhancedGoalTracker.data.goals.length;
+      } else if (window.enhancedGoalTracker.data.title) {
+        // Using old single goal format
+        currentGoals = 1;
+      } else {
+        currentGoals = 0;
+      }
+    }
+
+    const maxGoals = CONFIG.PREMIUM.FREE_LIMITS.MAX_GOALS;
+
+    const span = lockButton.querySelector("span");
+    if (span) {
+      span.textContent =
+        currentGoals >= maxGoals
+          ? `Free limit reached`
+          : `Free: ${currentGoals}/${maxGoals} goals`;
+    }
+  }
+
+  // Method to check if a premium feature should be blocked
+  shouldBlockPremiumFeature(feature) {
+    if (!CONFIG.PREMIUM.FAKE_DOOR.ENABLED) return false;
+
+    // Check specific feature limits
+    if (feature === "multiple_goals" && window.enhancedGoalTracker) {
+      let currentGoals = 1;
+      if (
+        window.enhancedGoalTracker.data.goals &&
+        Array.isArray(window.enhancedGoalTracker.data.goals)
+      ) {
+        currentGoals = window.enhancedGoalTracker.data.goals.length;
+      } else if (window.enhancedGoalTracker.data.title) {
+        currentGoals = 1;
+      }
+
+      return currentGoals >= CONFIG.PREMIUM.FREE_LIMITS.MAX_GOALS;
+    }
+
+    // All other premium features are blocked in free tier
+    return true;
+  }
+}
 
 // ============================================
 // SOPHISTICATED BACKGROUND SYSTEM
@@ -465,8 +879,11 @@ class EnhancedDailyStreak {
     const goalButton = document.getElementById("goalCheckInButton");
     if (goalButton) {
       // Show goal check-in button if a goal exists
-      if (window.enhancedGoalTracker && window.enhancedGoalTracker.data.title) {
-        goalButton.style.display = "flex";
+      if (window.enhancedGoalTracker) {
+        const currentGoal = window.enhancedGoalTracker.getCurrentGoal();
+        if (currentGoal && currentGoal.title) {
+          goalButton.style.display = "flex";
+        }
       }
     }
   }
@@ -712,7 +1129,7 @@ class EnhancedDailyStreak {
 }
 
 // ============================================
-// ENHANCED GOAL TRACKER
+// ENHANCED GOAL TRACKER (UPDATED FOR PREMIUM)
 // ============================================
 
 class EnhancedGoalTracker {
@@ -727,30 +1144,64 @@ class EnhancedGoalTracker {
 
   loadData() {
     const defaultData = {
+      version: "1.0",
+      goals: [], // Array for multiple goals
+      activeGoalIndex: 0,
+      // Backward compatibility fields
       title: "",
       description: "",
       startDate: null,
       targetDate: null,
       progressDays: 0,
       totalDays: 90,
-      checkIns: {}, // YYYY-MM-DD: {notes: string, timestamp: number}
+      checkIns: {},
       completed: false,
       completedDate: null,
-      milestones: [], // Array of milestone achievements
+      milestones: [],
     };
 
     try {
       const saved = localStorage.getItem(this.storageKey);
-      return saved ? JSON.parse(saved) : defaultData;
+      if (!saved) return defaultData;
+
+      const parsed = JSON.parse(saved);
+
+      // Migration: Convert single goal to array format (for backward compatibility)
+      if (parsed.title && (!parsed.goals || !Array.isArray(parsed.goals))) {
+        parsed.goals = [
+          {
+            id: "goal_1",
+            title: parsed.title,
+            description: parsed.description || "",
+            startDate: parsed.startDate,
+            targetDate: parsed.targetDate,
+            progressDays: parsed.progressDays,
+            totalDays: parsed.totalDays,
+            checkIns: parsed.checkIns || {},
+            completed: parsed.completed || false,
+            completedDate: parsed.completedDate,
+            milestones: parsed.milestones || [],
+            createdAt: new Date().toISOString(),
+            isActive: true,
+          },
+        ];
+        parsed.activeGoalIndex = 0;
+        parsed.version = "1.1";
+
+        // Save migrated data
+        setTimeout(() => this.saveData(parsed), 100);
+      }
+
+      return parsed;
     } catch (e) {
       console.error("Error loading goal data:", e);
       return defaultData;
     }
   }
 
-  saveData() {
+  saveData(data = this.data) {
     try {
-      localStorage.setItem(this.storageKey, JSON.stringify(this.data));
+      localStorage.setItem(this.storageKey, JSON.stringify(data));
     } catch (e) {
       console.error("Error saving goal data:", e);
       this.showMessage(
@@ -768,7 +1219,8 @@ class EnhancedGoalTracker {
   }
 
   setupUI() {
-    const hasGoal = this.data.title && this.data.startDate;
+    const currentGoal = this.getCurrentGoal();
+    const hasGoal = currentGoal && currentGoal.title;
 
     const goalDisplay = document.getElementById("goalDisplay");
     const goalSetup = document.getElementById("goalSetup");
@@ -790,6 +1242,42 @@ class EnhancedGoalTracker {
     if (window.enhancedStreakSystem) {
       window.enhancedStreakSystem.showGoalCheckInButton();
     }
+
+    // Update premium goal limit display
+    if (window.premiumSystem) {
+      window.premiumSystem.updateGoalLimitDisplay();
+    }
+  }
+
+  getCurrentGoal() {
+    // If using new array format
+    if (
+      this.data.goals &&
+      Array.isArray(this.data.goals) &&
+      this.data.goals.length > 0
+    ) {
+      if (
+        this.data.activeGoalIndex >= 0 &&
+        this.data.activeGoalIndex < this.data.goals.length
+      ) {
+        return this.data.goals[this.data.activeGoalIndex];
+      }
+      return this.data.goals[0]; // Fallback to first goal
+    }
+
+    // Fallback to old single goal structure for backward compatibility
+    return {
+      title: this.data.title,
+      description: this.data.description,
+      startDate: this.data.startDate,
+      targetDate: this.data.targetDate,
+      progressDays: this.data.progressDays,
+      totalDays: this.data.totalDays,
+      checkIns: this.data.checkIns,
+      completed: this.data.completed,
+      completedDate: this.data.completedDate,
+      milestones: this.data.milestones,
+    };
   }
 
   setupEventListeners() {
@@ -801,7 +1289,7 @@ class EnhancedGoalTracker {
       });
     }
 
-    // Save goal button
+    // Save goal button - check for limits before saving
     const saveButton = document.getElementById("saveGoalButton");
     if (saveButton) {
       saveButton.addEventListener("click", () => {
@@ -842,20 +1330,31 @@ class EnhancedGoalTracker {
       goalSetup.style.display = "block";
 
       // Pre-fill if editing
-      if (this.data.title) {
+      const currentGoal = this.getCurrentGoal();
+      if (currentGoal.title) {
         const goalInput = document.getElementById("goalInput");
         const goalDescription = document.getElementById("goalDescription");
         const goalDuration = document.getElementById("goalDuration");
 
-        if (goalInput) goalInput.value = this.data.title;
+        if (goalInput) goalInput.value = currentGoal.title;
         if (goalDescription)
-          goalDescription.value = this.data.description || "";
-        if (goalDuration) goalDuration.value = this.data.totalDays.toString();
+          goalDescription.value = currentGoal.description || "";
+        if (goalDuration) goalDuration.value = currentGoal.totalDays.toString();
       }
     }
   }
 
   saveGoal() {
+    // Check if we can add a new goal (for premium)
+    if (
+      window.premiumSystem &&
+      window.premiumSystem.shouldBlockPremiumFeature("multiple_goals")
+    ) {
+      // Show premium modal
+      window.premiumSystem.handlePremiumClick("multiple_goals", "add_goal");
+      return;
+    }
+
     const goalInput = document.getElementById("goalInput");
     const descriptionInput = document.getElementById("goalDescription");
     const durationSelect = document.getElementById("goalDuration");
@@ -889,7 +1388,9 @@ class EnhancedGoalTracker {
     const targetDate = new Date(today);
     targetDate.setDate(targetDate.getDate() + totalDays);
 
-    this.data = {
+    // Create new goal object
+    const newGoal = {
+      id: "goal_" + Date.now(),
       title: title,
       description: description,
       startDate: todayStr,
@@ -900,7 +1401,33 @@ class EnhancedGoalTracker {
       completed: false,
       completedDate: null,
       milestones: this.generateMilestones(totalDays),
+      createdAt: new Date().toISOString(),
+      isActive: true,
     };
+
+    // Initialize goals array if it doesn't exist
+    if (!this.data.goals || !Array.isArray(this.data.goals)) {
+      this.data.goals = [];
+    }
+
+    // Deactivate previous goals
+    this.data.goals.forEach((goal) => (goal.isActive = false));
+
+    // Add new goal
+    this.data.goals.push(newGoal);
+    this.data.activeGoalIndex = this.data.goals.length - 1;
+
+    // Keep backward compatibility for single goal view
+    this.data.title = title;
+    this.data.description = description;
+    this.data.startDate = todayStr;
+    this.data.targetDate = targetDate.toISOString().split("T")[0];
+    this.data.progressDays = 0;
+    this.data.totalDays = totalDays;
+    this.data.checkIns = {};
+    this.data.completed = false;
+    this.data.completedDate = null;
+    this.data.milestones = this.generateMilestones(totalDays);
 
     this.saveData();
     this.setupUI();
@@ -914,6 +1441,11 @@ class EnhancedGoalTracker {
     // Show goal check-in button
     if (window.enhancedStreakSystem) {
       window.enhancedStreakSystem.showGoalCheckInButton();
+    }
+
+    // Update premium goal limit display
+    if (window.premiumSystem) {
+      window.premiumSystem.updateGoalLimitDisplay();
     }
   }
 
@@ -947,28 +1479,49 @@ class EnhancedGoalTracker {
   }
 
   recordProgress() {
+    const currentGoal = this.getCurrentGoal();
+    if (!currentGoal || currentGoal.completed) return;
+
     const today = new Date();
     const todayStr = today.toISOString().split("T")[0];
 
     // Check if already recorded today
-    if (this.data.checkIns[todayStr]) {
+    if (currentGoal.checkIns && currentGoal.checkIns[todayStr]) {
       this.showMessage("Already recorded progress today! Great job!", "info");
       return;
     }
 
     // Record progress
-    this.data.checkIns[todayStr] = {
+    if (!currentGoal.checkIns) currentGoal.checkIns = {};
+    currentGoal.checkIns[todayStr] = {
       notes: "",
       timestamp: Date.now(),
     };
-    this.data.progressDays++;
+    currentGoal.progressDays++;
+
+    // Update in the goals array if using new format
+    if (this.data.goals && Array.isArray(this.data.goals)) {
+      const goalIndex = this.data.goals.findIndex(
+        (g) => g.id === currentGoal.id,
+      );
+      if (goalIndex !== -1) {
+        this.data.goals[goalIndex] = currentGoal;
+      }
+    }
+
+    // Update backward compatibility fields
+    this.data.progressDays = currentGoal.progressDays;
+    this.data.checkIns = currentGoal.checkIns;
 
     // Check milestones
-    this.checkMilestones();
+    this.checkMilestones(currentGoal);
 
     // Check if goal completed
-    if (this.data.progressDays >= this.data.totalDays && !this.data.completed) {
-      this.completeGoal();
+    if (
+      currentGoal.progressDays >= currentGoal.totalDays &&
+      !currentGoal.completed
+    ) {
+      this.completeGoal(currentGoal);
       return;
     }
 
@@ -982,9 +1535,9 @@ class EnhancedGoalTracker {
     this.checkForWeeklyMotivation(true);
   }
 
-  checkMilestones() {
-    this.data.milestones.forEach((milestone) => {
-      if (!milestone.achieved && this.data.progressDays >= milestone.day) {
+  checkMilestones(goal) {
+    goal.milestones.forEach((milestone) => {
+      if (!milestone.achieved && goal.progressDays >= milestone.day) {
         milestone.achieved = true;
         milestone.achievedDate = new Date().toISOString();
         this.showMessage(`🏆 ${milestone.message}`, "milestone");
@@ -992,14 +1545,27 @@ class EnhancedGoalTracker {
     });
   }
 
-  completeGoal() {
+  completeGoal(goal) {
+    goal.completed = true;
+    goal.completedDate = new Date().toISOString();
+
+    // Update in the goals array if using new format
+    if (this.data.goals && Array.isArray(this.data.goals)) {
+      const goalIndex = this.data.goals.findIndex((g) => g.id === goal.id);
+      if (goalIndex !== -1) {
+        this.data.goals[goalIndex] = goal;
+      }
+    }
+
+    // Update backward compatibility
     this.data.completed = true;
-    this.data.completedDate = new Date().toISOString();
+    this.data.completedDate = goal.completedDate;
+
     this.saveData();
     this.updateDisplay();
 
     this.showMessage(
-      `🎉 CONGRATULATIONS! You completed "${this.data.title}" in ${this.data.progressDays} days!`,
+      `🎉 CONGRATULATIONS! You completed "${goal.title}" in ${goal.progressDays} days!`,
       "celebration",
     );
 
@@ -1016,19 +1582,22 @@ class EnhancedGoalTracker {
   }
 
   checkForWeeklyMotivation(forceCheck = false) {
+    const currentGoal = this.getCurrentGoal();
+    if (!currentGoal || currentGoal.progressDays === 0) return;
+
     const now = Date.now();
     const shouldShow =
       forceCheck ||
       now - this.lastMotivationalMessage > this.MOTIVATION_COOLDOWN;
 
-    if (shouldShow && this.data.progressDays > 0) {
-      const weekNumber = Math.floor(this.data.progressDays / 7);
+    if (shouldShow && currentGoal.progressDays > 0) {
+      const weekNumber = Math.floor(currentGoal.progressDays / 7);
       if (weekNumber > 0) {
         const messages = [
-          `🔥 Week ${weekNumber} in the books! ${this.getPaceMessage()}`,
-          `🎯 ${this.data.progressDays} days of consistent effort! ${this.getCompletionEstimate()}`,
-          `💪 You're ${((this.data.progressDays / this.data.totalDays) * 100).toFixed(1)}% to your goal!`,
-          `🚀 At this pace, you'll reach your goal by ${this.getProjectedDate()}.`,
+          `🔥 Week ${weekNumber} in the books! ${this.getPaceMessage(currentGoal)}`,
+          `🎯 ${currentGoal.progressDays} days of consistent effort! ${this.getCompletionEstimate(currentGoal)}`,
+          `💪 You're ${((currentGoal.progressDays / currentGoal.totalDays) * 100).toFixed(1)}% to your goal!`,
+          `🚀 At this pace, you'll reach your goal by ${this.getProjectedDate(currentGoal)}.`,
         ];
 
         const randomMsg = messages[Math.floor(Math.random() * messages.length)];
@@ -1038,9 +1607,9 @@ class EnhancedGoalTracker {
     }
   }
 
-  getPaceMessage() {
-    const daysCompleted = this.data.progressDays;
-    const expectedDays = this.getExpectedDays();
+  getPaceMessage(goal) {
+    const daysCompleted = goal.progressDays;
+    const expectedDays = this.getExpectedDays(goal);
 
     if (daysCompleted > expectedDays) {
       return "You're ahead of schedule!";
@@ -1051,20 +1620,20 @@ class EnhancedGoalTracker {
     }
   }
 
-  getExpectedDays() {
-    if (!this.data.startDate) return 0;
-    const start = new Date(this.data.startDate);
+  getExpectedDays(goal) {
+    if (!goal.startDate) return 0;
+    const start = new Date(goal.startDate);
     const today = new Date();
     const diffTime = Math.abs(today - start);
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   }
 
-  getCompletionEstimate() {
-    if (this.data.completed) return "Goal completed!";
+  getCompletionEstimate(goal) {
+    if (goal.completed) return "Goal completed!";
 
-    const remaining = this.data.totalDays - this.data.progressDays;
+    const remaining = goal.totalDays - goal.progressDays;
     const dailyRate =
-      this.data.progressDays / Math.max(1, this.getExpectedDays());
+      goal.progressDays / Math.max(1, this.getExpectedDays(goal));
 
     if (dailyRate > 0) {
       const daysToComplete = Math.ceil(remaining / dailyRate);
@@ -1076,12 +1645,12 @@ class EnhancedGoalTracker {
     return "Start tracking to see your completion date!";
   }
 
-  getProjectedDate() {
-    if (!this.data.startDate) return "soon";
+  getProjectedDate(goal) {
+    if (!goal.startDate) return "soon";
 
-    const start = new Date(this.data.startDate);
+    const start = new Date(goal.startDate);
     const projected = new Date(start);
-    projected.setDate(projected.getDate() + this.data.totalDays);
+    projected.setDate(projected.getDate() + goal.totalDays);
 
     return projected.toLocaleDateString();
   }
@@ -1146,7 +1715,8 @@ class EnhancedGoalTracker {
   }
 
   updateDisplay() {
-    if (!this.data.title) return;
+    const currentGoal = this.getCurrentGoal();
+    if (!currentGoal || !currentGoal.title) return;
 
     // Update all elements
     const elements = {
@@ -1162,33 +1732,36 @@ class EnhancedGoalTracker {
 
     // Update each element if it exists
     if (elements.title) {
-      elements.title.textContent = this.data.title;
-      if (this.data.completed) {
+      elements.title.textContent = currentGoal.title;
+      if (currentGoal.completed) {
         elements.title.innerHTML += ' <span style="color: #00ff88;">✓</span>';
       }
     }
 
     if (elements.progressDays)
-      elements.progressDays.textContent = this.data.progressDays;
+      elements.progressDays.textContent = currentGoal.progressDays;
     if (elements.totalDays)
-      elements.totalDays.textContent = this.data.totalDays;
+      elements.totalDays.textContent = currentGoal.totalDays;
 
     const progressPercent =
-      (this.data.progressDays / this.data.totalDays) * 100;
+      (currentGoal.progressDays / currentGoal.totalDays) * 100;
     if (elements.progressPercent) {
       elements.progressPercent.textContent = `${Math.min(progressPercent, 100).toFixed(1)}%`;
     }
 
-    if (elements.startDate && this.data.startDate) {
-      const start = new Date(this.data.startDate);
+    if (elements.startDate && currentGoal.startDate) {
+      const start = new Date(currentGoal.startDate);
       elements.startDate.textContent = start.toLocaleDateString();
     }
 
-    const remaining = Math.max(0, this.data.totalDays - this.data.progressDays);
+    const remaining = Math.max(
+      0,
+      currentGoal.totalDays - currentGoal.progressDays,
+    );
     if (elements.daysRemaining) elements.daysRemaining.textContent = remaining;
 
-    if (elements.completionDate && this.data.targetDate) {
-      const target = new Date(this.data.targetDate);
+    if (elements.completionDate && currentGoal.targetDate) {
+      const target = new Date(currentGoal.targetDate);
       elements.completionDate.textContent = target.toLocaleDateString();
     }
 
@@ -1327,16 +1900,34 @@ class FeedbackSystem {
       streak: window.enhancedStreakSystem?.data?.streak || 0,
       longestStreak: window.enhancedStreakSystem?.data?.longestStreak || 0,
       totalCheckIns: window.enhancedStreakSystem?.data?.totalCheckIns || 0,
-      hasGoal: !!window.enhancedGoalTracker?.data?.title,
-      goalProgress: window.enhancedGoalTracker?.data?.progressDays || 0,
-      goalTotal: window.enhancedGoalTracker?.data?.totalDays || 0,
-      goalCompleted: window.enhancedGoalTracker?.data?.completed || false,
+      hasGoal: false,
+      goalProgress: 0,
+      goalTotal: 0,
+      goalCompleted: false,
+      premiumClicks: 0,
       currentTheme:
         document.documentElement.getAttribute("data-theme") || "dark",
       userAgent: navigator.userAgent.substring(0, 100), // Truncated
       screenResolution: `${window.screen.width}x${window.screen.height}`,
       timestamp: new Date().toISOString(),
+      appVersion: CONFIG.VERSION,
     };
+
+    // Add goal data
+    if (window.enhancedGoalTracker) {
+      const currentGoal = window.enhancedGoalTracker.getCurrentGoal();
+      userData.hasGoal = !!(currentGoal && currentGoal.title);
+      userData.goalProgress = currentGoal?.progressDays || 0;
+      userData.goalTotal = currentGoal?.totalDays || 0;
+      userData.goalCompleted = currentGoal?.completed || false;
+    }
+
+    // Add premium click data
+    const premiumClicks = ensureDataSafety(
+      CONFIG.PREMIUM.STORAGE_KEYS.CLICKS,
+      [],
+    );
+    userData.premiumClicks = premiumClicks.length;
 
     const userDataField = document.getElementById("userData");
     if (userDataField) {
@@ -1602,6 +2193,11 @@ function updateDateTime() {
   currentYear.textContent = progressData.year;
 }
 
+function updateYearProgress() {
+  // This function is called periodically to update the year progress
+  updateDateTime();
+}
+
 function updateSeason(date) {
   const hemisphere = seasonDropdown.value;
   const season = getCurrentSeason(date, hemisphere);
@@ -1649,6 +2245,9 @@ let updateInterval;
 function enhancedInit() {
   console.log(`DAYLY Progress Tracker v${CONFIG.VERSION} initializing...`);
 
+  // Check for safe version update
+  safeVersionUpdate();
+
   // Initialize background system
   backgroundSystem = new BackgroundSystem();
 
@@ -1662,6 +2261,9 @@ function enhancedInit() {
   // Initialize feedback system
   window.feedbackSystem = new FeedbackSystem();
 
+  // Initialize premium system
+  window.premiumSystem = new PremiumSystem();
+
   // Set version info
   versionInfo.textContent = `v${CONFIG.VERSION}`;
 
@@ -1673,6 +2275,9 @@ function enhancedInit() {
 
   // Set up updates
   updateInterval = setInterval(updateDateTime, CONFIG.UPDATE_INTERVAL);
+
+  // Set up year progress updates (less frequent)
+  setInterval(updateYearProgress, CONFIG.UPDATE_INTERVAL * 60);
 
   // Event listeners
   seasonDropdown.addEventListener("change", () => {
