@@ -1,3 +1,4 @@
+INDEX.HTML
 <!doctype html>
 <html lang="en">
   <head>
@@ -7,7 +8,7 @@
       name="description"
       content="Year Progress Tracker - Visualize how far into the year we are"
     />
-    <title>DAYLY - Time Awareness & Progress Tracker</title>
+    <title>Year Progress Tracker</title>
     <link rel="stylesheet" href="Assets/styles/styles.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -41,7 +42,7 @@
   </head>
   <body>
     <div class="container">
-      <!-- Theme Toggle with Pull Chain Light Bulb -->
+      <!-- Theme Toggle with Pull Chain Light Bulb --><!-- Sophisticated Background Layers -->
       <div class="grid-layer"></div>
       <div class="time-pulse"></div>
       <div class="data-streams"></div>
@@ -60,7 +61,7 @@
         </div>
       </div>
       <header class="header">
-        <h1 class="app-title">DAYLY</h1>
+        <h1 class="app-title">Track your Year</h1>
         <p class="app-subtitle">Visualize the passage of time</p>
       </header>
 
@@ -153,19 +154,10 @@
             </div>
           </div>
 
-          <!-- Action Buttons -->
+          <!-- Action Button -->
           <button class="streak-button" id="checkInButton">
             <i class="fas fa-check-circle"></i>
             I showed up today!
-          </button>
-
-          <button
-            class="streak-button secondary"
-            id="goalCheckInButton"
-            style="display: none; margin-top: 10px"
-          >
-            <i class="fas fa-bullseye"></i>
-            I worked toward my goal!
           </button>
 
           <div class="streak-message" id="streakMessage"></div>
@@ -194,9 +186,8 @@
                 ></div>
               </div>
               <div class="progress-text">
-                <span id="goalProgressDays">0</span> /
-                <span id="goalTotalDays">0</span> days (<span
-                  id="goalProgressPercent"
+                <span id="progressDays">0</span> /
+                <span id="totalDays">0</span> days (<span id="progressPercent"
                   >0%</span
                 >)
               </div>
@@ -205,17 +196,15 @@
             <div class="goal-details">
               <div class="detail-item">
                 <i class="fas fa-calendar-check"></i>
-                <span>Started: <span id="goalStartDate">-</span></span>
+                <span>Started: <span id="startDate">-</span></span>
               </div>
               <div class="detail-item">
                 <i class="fas fa-hourglass-half"></i>
-                <span
-                  >Remaining: <span id="goalDaysRemaining">-</span> days</span
-                >
+                <span>Remaining: <span id="daysRemaining">-</span> days</span>
               </div>
               <div class="detail-item">
                 <i class="fas fa-tachometer-alt"></i>
-                <span>Target: <span id="goalCompletionDate">-</span></span>
+                <span>Pace: <span id="completionDate">-</span></span>
               </div>
             </div>
           </div>
@@ -230,13 +219,6 @@
                 placeholder="What do you want to achieve?"
                 maxlength="50"
               />
-              <textarea
-                id="goalDescription"
-                class="goal-description"
-                placeholder="Why is this goal important to you? (Optional)"
-                maxlength="200"
-                rows="2"
-              ></textarea>
               <div class="duration-selector">
                 <label>Duration:</label>
                 <select id="goalDuration">
@@ -274,101 +256,6 @@
 
           <div class="motivational-message" id="motivationalMessage"></div>
         </section>
-        <!-- Add this right after the Goal Card -->
-<section class="premium-features-card">
-  <div class="card-header">
-    <h2 class="card-title">
-      <i class="fas fa-crown premium-icon"></i>
-      Premium Features
-    </h2>
-    <span class="premium-badge">Coming Soon</span>
-  </div>
-  
-  <div class="premium-features-list">
-    <!-- Multiple Goals Feature -->
-    <div class="premium-feature" data-feature="multiple_goals">
-      <div class="feature-icon">
-        <i class="fas fa-bullseye"></i>
-      </div>
-      <div class="feature-info">
-        <h3>Multiple Goals</h3>
-        <p>Track fitness, learning, and work goals simultaneously</p>
-      </div>
-      <button class="premium-lock" data-action="add_goal">
-        <i class="fas fa-lock"></i>
-        <span>Free: 1 goal</span>
-      </button>
-    </div>
-    
-    <!-- Yearly Wrapped Feature -->
-    <div class="premium-feature" data-feature="yearly_wrapped">
-      <div class="feature-icon">
-        <i class="fas fa-gift"></i>
-      </div>
-      <div class="feature-info">
-        <h3>Yearly Wrapped</h3>
-        <p>See your year in review with beautiful shareable summaries</p>
-      </div>
-      <button class="premium-lock" data-action="view_wrapped">
-        <i class="fas fa-lock"></i>
-        <span>Premium</span>
-      </button>
-    </div>
-    
-    <!-- Advanced Analytics Feature -->
-    <div class="premium-feature" data-feature="analytics">
-      <div class="feature-icon">
-        <i class="fas fa-chart-line"></i>
-      </div>
-      <div class="feature-info">
-        <h3>Advanced Analytics</h3>
-        <p>Consistency scores, patterns, and productivity insights</p>
-      </div>
-      <button class="premium-lock" data-action="view_analytics">
-        <i class="fas fa-lock"></i>
-        <span>Premium</span>
-      </button>
-    </div>
-    
-    <!-- Export Feature -->
-    <div class="premium-feature" data-feature="export">
-      <div class="feature-icon">
-        <i class="fas fa-download"></i>
-      </div>
-      <div class="feature-info">
-        <h3>Export & Share</h3>
-        <p>Download your data and create shareable progress cards</p>
-      </div>
-      <button class="premium-lock" data-action="export_data">
-        <i class="fas fa-lock"></i>
-        <span>Premium</span>
-      </button>
-    </div>
-    
-    <!-- Cloud Sync Feature -->
-    <div class="premium-feature" data-feature="cloud_sync">
-      <div class="feature-icon">
-        <i class="fas fa-cloud"></i>
-      </div>
-      <div class="feature-info">
-        <h3>Cloud Sync</h3>
-        <p>Access your progress anywhere, across all devices</p>
-      </div>
-      <button class="premium-lock" data-action="enable_sync">
-        <i class="fas fa-lock"></i>
-        <span>Premium</span>
-      </button>
-    </div>
-  </div>
-  
-  <div class="premium-cta">
-    <p class="premium-note">
-      <i class="fas fa-rocket"></i>
-      Premium features launching soon. Be among the first!
-    </p>
-  </div>
-</section>
-<!-- Add Premium button to header/navigation -->
         <!--Seasons-->
         <section class="season-section">
           <h2 class="section-title">
@@ -403,147 +290,42 @@
       </main>
       <!--Footer-->
       <footer class="footer">
-        <!-- In your footer section, add: -->
-        <footer class="footer">
-          <p class="footer-text">
-            DAYLY Progress Tracker •
-            <span id="versionInfo">v1.3.0</span> •
-            <span id="currentYear">2026</span>
-          </p>
-
-          <!-- Add this feedback prompt -->
-          <div class="feedback-prompt">
-            <p class="feedback-question">
-              <i class="fas fa-comment-medical"></i>
-              Do you have any thoughts, concerns, or requests?
-              <button class="text-link" id="footerFeedbackBtn">
-                We'd love to hear your feedback!
-              </button>
-            </p>
-          </div>
-
-          <p class="footer-note">
-            <i class="fas fa-code"></i>
-            Amilli Labs
-          </p>
-        </footer>
-    </div>
-    <!-- Feedback Modal -->
-    <div class="feedback-modal" id="feedbackModal">
-      <div class="feedback-modal-content">
-        <button class="close-modal" id="closeFeedbackModal">&times;</button>
-
-        <div class="feedback-header">
-          <h2><i class="fas fa-comment-alt"></i> Share Your Feedback</h2>
-          <p class="feedback-subtitle">
-            Your thoughts help us improve Dayly for everyone
-          </p>
-        </div>
-
-        <form
-          class="feedback-form"
-          id="feedbackForm"
-          action="https://formspree.io/f/mnjpwnor"
-          method="POST"
-        >
-          <!-- Hidden fields for context -->
-          <input type="hidden" name="_subject" value="DAYLY Feedback" />
-          <input type="hidden" name="_replyto" id="userEmail" value="" />
-          <input type="hidden" name="app_version" value="1.3.0" />
-          <input type="hidden" name="user_data" id="userData" value="" />
-
-          <div class="form-group">
-            <label for="feedbackType">What type of feedback do you have?</label>
-            <select id="feedbackType" name="feedback_type" required>
-              <option value="" disabled selected>Select a category</option>
-              <option value="feature_request">Feature Request</option>
-              <option value="bug_report">Bug Report</option>
-              <option value="general_feedback">General Feedback</option>
-              <option value="ui_ux">UI/UX Suggestion</option>
-              <option value="performance">Performance Issue</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="feedbackMessage">Your Feedback *</label>
-            <textarea
-              id="feedbackMessage"
-              name="message"
-              placeholder="Tell us what you think, what you'd like to see, or any issues you've encountered..."
-              rows="5"
-              required
-            ></textarea>
-          </div>
-
-          <div class="form-group">
-            <label for="userName">Your Name (Optional)</label>
-            <input
-              type="text"
-              id="userName"
-              name="name"
-              placeholder="How should we call you?"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="feedbackEmail"
-              >Your Email (Optional - for follow-up)</label
-            >
-            <input
-              type="email"
-              id="feedbackEmail"
-              name="email"
-              placeholder="email@example.com"
-            />
-            <small class="email-note"
-              >We'll only use this to respond to your feedback</small
-            >
-          </div>
-
-          <div class="form-group">
-            <label class="checkbox-label">
-              <input type="checkbox" name="allow_contact" checked />
-              <span>It's OK to contact me about this feedback</span>
-            </label>
-          </div>
-
-          <div class="form-group">
-            <label class="checkbox-label">
-              <input type="checkbox" name="include_anonymous_data" />
-              <span>Include anonymous app data to help debug issues</span>
-              <small class="data-note"
-                >(Streak count, goal progress, no personal info)</small
-              >
-            </label>
-          </div>
-
-          <div class="form-buttons">
-            <button type="button" class="cancel-btn" id="cancelFeedback">
-              Cancel
-            </button>
-            <button type="submit" class="submit-btn">
-              <i class="fas fa-paper-plane"></i>
-              Send Feedback
-            </button>
-          </div>
-
-          <p class="form-note">
-            <i class="fas fa-shield-alt"></i>
-            We respect your privacy. Your feedback will only be used to improve
-            DAYLY.
-          </p>
-        </form>
-      </div>
+        <p class="footer-text">
+          Year Progress Tracker •
+          <span id="versionInfo">v1.0.0</span> •
+          <span id="currentYear">2026</span>
+        </p>
+        <p class="footer-note">
+          <i class="fas fa-code"></i>
+          Amilli Labs
+        </p>
+      </footer>
     </div>
 
-    <!-- Feedback Button in Footer -->
-    <div class="feedback-button-container">
-      <button class="feedback-button" id="openFeedbackModal">
-        <i class="fas fa-comment-dots"></i>
-        Give Feedback
-      </button>
-    </div>
     <script src="Assets/scripts/scripts.js"></script>
   </body>
 </html>
+
+MANIFEST.JSON
+{
+  "name": "Year Progress Tracker",
+  "short_name": "YearProgress",
+  "description": "Visualize the passage of time with real-time year progress tracking",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#4361ee",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22 fill=%22%234361ee%22>📅</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "lang": "en",
+  "orientation": "portrait-primary"
+}
+
+
