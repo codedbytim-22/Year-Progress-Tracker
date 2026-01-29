@@ -1,4 +1,4 @@
-// DOM Elements
+// DOM Elements - direct references
 const dateDisplay = document.getElementById("dateDisplay");
 const timeDisplay = document.getElementById("timeDisplay");
 const progressBar = document.getElementById("progressBar");
@@ -10,13 +10,40 @@ const daysRemaining = document.getElementById("daysRemaining");
 const totalDays = document.getElementById("totalDays");
 const currentYear = document.getElementById("currentYear");
 const themeToggle = document.getElementById("themeToggle");
-const sunRays = document.getElementById("sunRays");
-const starsContainer = document.getElementById("starsContainer");
+
+// New feature elements
+const weekDisplay = document.getElementById("weekDisplay");
+const monthPercentText = document.getElementById("monthPercentText");
+const monthProgressBar = document.getElementById("monthProgressBar");
+const monthNameText = document.getElementById("monthNameText");
+const monthPercentInline = document.getElementById("monthPercentInline");
+const greetingText = document.getElementById("greetingText");
+const eventCountdown = document.getElementById("eventCountdown");
+const streakCount = document.getElementById("streakCount");
+
+// Goal Tracker Elements
+const goalInput = document.getElementById("goalInput");
+const goalTimeline = document.getElementById("goalTimeline"); // Changed from goalDays
+const startGoalBtn = document.getElementById("startGoalBtn");
+const editGoalBtn = document.getElementById("editGoalBtn");
+const goalProgressPercent = document.getElementById("goalProgressPercent");
+const goalProgressBar = document.getElementById("goalProgressBar");
+const goalProgressText = document.getElementById("goalProgressText");
+const goalStreakCount = document.getElementById("goalStreakCount");
+const completionBadge = document.getElementById("completionBadge");
 
 // Theme Management
 let isDarkMode = true;
 
-// Initialize theme from localStorage or default to dark
+// Goal state
+let mainGoal = null;
+let goalStreak = 0;
+let isEditing = false;
+let generalStreak = localStorage.getItem("streak")
+  ? parseInt(localStorage.getItem("streak"))
+  : 0;
+
+// Theme functions
 function initTheme() {
   const savedTheme = localStorage.getItem("yearProgressTheme");
   if (savedTheme === "light") {
@@ -31,7 +58,6 @@ function setLightMode() {
   document.body.classList.add("light-mode");
   isDarkMode = false;
   localStorage.setItem("yearProgressTheme", "light");
-  document.dispatchEvent(new CustomEvent("themeChanged", { detail: "light" }));
 }
 
 function setDarkMode() {
@@ -39,279 +65,26 @@ function setDarkMode() {
   document.body.classList.add("dark-mode");
   isDarkMode = true;
   localStorage.setItem("yearProgressTheme", "dark");
-  document.dispatchEvent(new CustomEvent("themeChanged", { detail: "dark" }));
 }
 
 function toggleTheme() {
   if (isDarkMode) {
     setLightMode();
-    triggerSunAnimation();
   } else {
     setDarkMode();
-    triggerMoonStarsAnimation();
   }
 }
 
-// Enhanced Sun Animation
-function triggerSunAnimation() {
-  sunRays.innerHTML = "";
-
-  // Create 12 rays for more dynamic effect
-  for (let i = 0; i < 12; i++) {
-    const ray = document.createElement("div");
-    ray.className = "sun-ray";
-    const delay = i * 0.1;
-    const length = 15 + Math.random() * 10;
-
-    ray.style.cssText = `
-      --length: ${length}px;
-      --rot: ${i * 30}deg;
-      --delay: ${delay}s;
-    `;
-
-    sunRays.appendChild(ray);
-  }
-
-  // Add glow effect
-  const glow = document.createElement("div");
-  glow.className = "sun-glow";
-  sunRays.appendChild(glow);
-
-  sunRays.classList.add("sun-animation");
-  setTimeout(() => {
-    sunRays.classList.remove("sun-animation");
-  }, 1500);
+// Date calculation functions
+function getDayOfYear(date) {
+  const start = new Date(date.getFullYear(), 0, 1);
+  const diff = date.getTime() - start.getTime();
+  const oneDay = 1000 * 60 * 60 * 24;
+  return Math.floor(diff / oneDay) + 1;
 }
 
-// Enhanced Moon Stars Animation
-function triggerMoonStarsAnimation() {
-  starsContainer.innerHTML = "";
-
-  // Create 20 stars with varied timing
-  for (let i = 0; i < 20; i++) {
-    const star = document.createElement("div");
-    star.className = "star";
-
-    const angle = Math.random() * Math.PI * 2;
-    const distance = 15 + Math.random() * 40;
-    const tx = Math.cos(angle) * distance;
-    const ty = Math.sin(angle) * distance;
-    const delay = Math.random() * 0.5;
-    const size = 2 + Math.random() * 3;
-    const duration = 1 + Math.random() * 1.5;
-
-    // Create unique animation for each star
-    const animationName = `starEmit${i}`;
-    const keyframes = `
-      @keyframes ${animationName} {
-        0% { 
-          transform: translate(-50%, -50%) scale(0); 
-          opacity: 0;
-        }
-        20% { 
-          transform: translate(calc(-50% + ${tx * 0.3}px), calc(-50% + ${ty * 0.3}px)) scale(1.5); 
-          opacity: 1;
-        }
-        40% { 
-          transform: translate(calc(-50% + ${tx * 0.7}px), calc(-50% + ${ty * 0.7}px)) scale(1); 
-          opacity: 0.7;
-        }
-        70% { 
-          transform: translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px)) scale(0.8); 
-          opacity: 0.3;
-        }
-        100% { 
-          transform: translate(calc(-50% + ${tx * 1.2}px), calc(-50% + ${ty * 1.2}px)) scale(0.5); 
-          opacity: 0;
-        }
-      }
-    `;
-
-    // Add the keyframes to the document
-    const style = document.createElement("style");
-    style.textContent = keyframes;
-    document.head.appendChild(style);
-
-    star.style.cssText = `
-      position: absolute;
-      width: ${size}px;
-      height: ${size}px;
-      background: white;
-      border-radius: 50%;
-      left: 50%;
-      top: 50%;
-      box-shadow: 0 0 ${size * 2}px white;
-      opacity: 0;
-      animation: ${animationName} ${duration}s ease-out ${delay}s forwards;
-    `;
-
-    starsContainer.appendChild(star);
-
-    // Clean up the style element after animation
-    setTimeout(
-      () => {
-        if (style.parentNode) {
-          style.parentNode.removeChild(style);
-        }
-      },
-      (duration + delay) * 1000,
-    );
-  }
-
-  // Add moon glow
-  const moonGlow = document.createElement("div");
-  moonGlow.className = "moon-glow";
-  starsContainer.appendChild(moonGlow);
-
-  starsContainer.classList.add("moon-stars-animation");
-  setTimeout(() => {
-    starsContainer.classList.remove("moon-stars-animation");
-  }, 2000);
-}
-
-// Particle System Class
-class ParticleSystem {
-  constructor() {
-    this.particles = [];
-    this.container = null;
-    this.isActive = true;
-    this.particleCount = window.innerWidth < 768 ? 15 : 25;
-    this.animationId = null;
-
-    this.init();
-  }
-
-  init() {
-    this.createContainer();
-    this.generateParticles();
-    this.startAnimation();
-
-    // Toggle with theme
-    document.addEventListener("themeChanged", () => {
-      this.resetParticles();
-    });
-  }
-
-  createContainer() {
-    this.container = document.createElement("div");
-    this.container.className = "particle-system";
-    document.body.appendChild(this.container);
-  }
-
-  generateParticles() {
-    this.clearParticles();
-
-    const isLight = document.body.classList.contains("light-mode");
-    const colors = isLight
-      ? [
-          "rgba(147, 197, 253, 0.3)",
-          "rgba(192, 132, 252, 0.25)",
-          "rgba(253, 230, 138, 0.2)",
-        ]
-      : [
-          "rgba(96, 165, 250, 0.4)",
-          "rgba(124, 58, 237, 0.3)",
-          "rgba(248, 250, 252, 0.25)",
-        ];
-
-    for (let i = 0; i < this.particleCount; i++) {
-      const particle = document.createElement("div");
-      const size = Math.random() * 4 + 2;
-      const x = Math.random() * 100;
-      const y = Math.random() * 100;
-      const duration = Math.random() * 30 + 20;
-      const delay = Math.random() * 10;
-
-      particle.className = isLight ? "particle" : "star";
-      particle.style.cssText = `
-        width: ${size}px;
-        height: ${size}px;
-        left: ${x}%;
-        top: ${y}%;
-        --duration: ${duration}s;
-        --delay: ${delay}s;
-      `;
-
-      if (isLight) {
-        particle.style.setProperty(
-          "--particle-color",
-          colors[Math.floor(Math.random() * colors.length)],
-        );
-        particle.style.setProperty("--move-x", `${Math.random() * 60 - 30}px`);
-        particle.style.setProperty("--move-y", `${Math.random() * 60 - 30}px`);
-        particle.style.setProperty("--opacity", Math.random() * 0.4 + 0.2);
-        particle.style.setProperty("--blur", "2px");
-      } else {
-        particle.style.setProperty(
-          "--star-color",
-          colors[Math.floor(Math.random() * colors.length)],
-        );
-        particle.style.setProperty("--size", `${size * 4}px`);
-      }
-
-      this.container.appendChild(particle);
-      this.particles.push(particle);
-    }
-  }
-
-  clearParticles() {
-    if (this.container) {
-      this.container.innerHTML = "";
-    }
-    this.particles = [];
-  }
-
-  resetParticles() {
-    this.clearParticles();
-    this.generateParticles();
-  }
-
-  startAnimation() {
-    if ("requestAnimationFrame" in window) {
-      this.animate();
-    }
-  }
-
-  animate() {
-    if (!this.isActive) return;
-
-    // Subtle continuous movement for particles
-    this.particles.forEach((particle, i) => {
-      if (particle.className === "particle") {
-        const time = Date.now() / 10000;
-        const x = Math.sin(time + i) * 1;
-        const y = Math.cos(time + i) * 1;
-        const currentTransform =
-          particle.style.transform || "translate(0px, 0px)";
-        particle.style.transform = `translate(${x}px, ${y}px) ${currentTransform.replace(/translate\([^)]+\)/, "")}`;
-      }
-    });
-
-    this.animationId = requestAnimationFrame(() => this.animate());
-  }
-
-  destroy() {
-    this.isActive = false;
-    if (this.animationId) {
-      cancelAnimationFrame(this.animationId);
-    }
-    this.clearParticles();
-    if (this.container && this.container.parentNode) {
-      this.container.parentNode.removeChild(this.container);
-    }
-  }
-}
-
-// Date and Progress Calculations
 function isLeapYear(year) {
   return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
-}
-
-function getDayOfYear(date) {
-  const start = new Date(date.getFullYear(), 0, 0);
-  const diff = date - start;
-  const oneDay = 1000 * 60 * 60 * 24;
-  return Math.floor(diff / oneDay);
 }
 
 function getTotalDaysInYear(year) {
@@ -319,13 +92,12 @@ function getTotalDaysInYear(year) {
 }
 
 function formatDate(date) {
-  const options = {
+  return date.toLocaleDateString("en-US", {
     weekday: "long",
     year: "numeric",
     month: "long",
     day: "numeric",
-  };
-  return date.toLocaleDateString("en-US", options);
+  });
 }
 
 function formatTime(date) {
@@ -337,127 +109,607 @@ function formatTime(date) {
   });
 }
 
+function getWeekNumber(date) {
+  const dayOfYear = getDayOfYear(date);
+  return Math.ceil(dayOfYear / 7);
+}
+
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good Morning 🌅";
+  if (hour < 18) return "Good Afternoon ☀️";
+  return "Good Evening 🌙";
+}
+
+// Main update function
 function updateDateTime() {
   const now = new Date();
   const year = now.getFullYear();
+
+  // Get day of year
   const dayOfYear = getDayOfYear(now);
   const totalDaysInYear = getTotalDaysInYear(year);
+
+  // Calculate progress
   const progress = (dayOfYear / totalDaysInYear) * 100;
+  const progressFixed = progress.toFixed(2);
 
   // Update date and time
   dateDisplay.textContent = formatDate(now);
   timeDisplay.textContent = formatTime(now);
 
-  // Update progress bar
-  progressBar.style.width = `${progress}%`;
+  // Update week number
+  if (weekDisplay) weekDisplay.textContent = getWeekNumber(now);
 
-  // Update percentage text
-  const progressFixed = progress.toFixed(2);
-  percentText.textContent = `${progressFixed}%`;
-  percentTextInline.textContent = `${progressFixed}%`;
+  // Update year progress bar
+  if (progressBar) progressBar.style.width = `${progress}%`;
+
+  // Update year percentage displays
+  if (percentText) percentText.textContent = `${progressFixed}%`;
+  if (percentTextInline) percentTextInline.textContent = `${progressFixed}%`;
 
   // Update year text
-  yearText.textContent = year;
+  if (yearText) yearText.textContent = year;
 
   // Update stats
-  daysPassed.textContent = dayOfYear;
-  daysRemaining.textContent = totalDaysInYear - dayOfYear;
-  totalDays.textContent = totalDaysInYear;
+  if (daysPassed) daysPassed.textContent = dayOfYear;
+  if (daysRemaining) daysRemaining.textContent = totalDaysInYear - dayOfYear;
+  if (totalDays) totalDays.textContent = totalDaysInYear;
 
   // Update footer year
-  currentYear.textContent = year;
+  if (currentYear) currentYear.textContent = year;
+
+  // Update month progress
+  updateMonthProgress(now);
+
+  // Update greeting
+  if (greetingText) greetingText.textContent = getGreeting();
+
+  // Update event countdown
+  updateEventCountdown();
+
+  // Update general streak
+  updateStreak();
+
+  // Check for new day in goal tracking
+  checkNewDay();
+}
+
+// Month progress calculation
+function updateMonthProgress(now) {
+  if (
+    !monthProgressBar ||
+    !monthPercentText ||
+    !monthNameText ||
+    !monthPercentInline
+  )
+    return;
+
+  const monthNames = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+
+  const currentMonth = now.getMonth();
+  const monthName = monthNames[currentMonth];
+
+  // Get first and last day of current month
+  const firstDay = new Date(now.getFullYear(), currentMonth, 1);
+  const lastDay = new Date(now.getFullYear(), currentMonth + 1, 0);
+
+  // Calculate days in month and current day
+  const daysInMonth = lastDay.getDate();
+  const currentDay = now.getDate();
+
+  // Calculate month progress
+  const monthProgress = (currentDay / daysInMonth) * 100;
+  const monthProgressFixed = monthProgress.toFixed(2);
+
+  // Update month progress
+  monthProgressBar.style.width = `${monthProgress}%`;
+  monthPercentText.textContent = `${monthProgressFixed}%`;
+  monthPercentInline.textContent = `${monthProgressFixed}%`;
+  monthNameText.textContent = `${monthName} is`;
+}
+
+function updateEventCountdown() {
+  if (!eventCountdown) return;
+
+  const nextEventDate = new Date("2026-03-22");
+  const today = new Date();
+
+  // Reset times to compare only dates
+  const todayDate = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
+  );
+  const eventDate = new Date(
+    nextEventDate.getFullYear(),
+    nextEventDate.getMonth(),
+    nextEventDate.getDate(),
+  );
+
+  const diff = eventDate.getTime() - todayDate.getTime();
+  const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+
+  if (days > 0) {
+    eventCountdown.textContent = `🎂 Birthday in ${days} day${days !== 1 ? "s" : ""}`;
+  } else if (days === 0) {
+    eventCountdown.textContent = "🎉 Event is TODAY!";
+  } else {
+    eventCountdown.textContent = `Event passed ${Math.abs(days)} day${Math.abs(days) !== 1 ? "s" : ""} ago`;
+  }
+}
+
+// GOAL TRACKER FUNCTIONS
+function loadGoal() {
+  try {
+    const savedGoal = localStorage.getItem("mainGoal");
+    const savedStreak = localStorage.getItem("goalStreak");
+
+    if (savedGoal) {
+      mainGoal = JSON.parse(savedGoal);
+    }
+
+    if (savedStreak) {
+      goalStreak = parseInt(savedStreak);
+    }
+  } catch (e) {
+    console.log("Error loading goal:", e);
+    mainGoal = null;
+    goalStreak = 0;
+  }
+}
+
+function checkNewDay() {
+  if (!mainGoal || !mainGoal.lastUpdatedDate) return;
+
+  const today = new Date().toDateString();
+  const lastUpdated = new Date(mainGoal.lastUpdatedDate).toDateString();
+
+  if (lastUpdated !== today) {
+    // It's a new day, enable the action button
+    if (startGoalBtn) startGoalBtn.disabled = false;
+    updateButtonText("active");
+  }
+}
+
+function updateGoalUI() {
+  if (!goalInput || !goalTimeline || !goalProgressBar || !goalProgressText)
+    return;
+
+  if (!mainGoal) {
+    // No goal set
+    goalInput.disabled = false;
+    goalTimeline.disabled = false;
+    goalInput.value = "";
+    goalTimeline.value = "30";
+    if (goalProgressPercent) goalProgressPercent.textContent = "0%";
+    if (goalProgressBar) goalProgressBar.style.width = "0%";
+    if (goalProgressText)
+      goalProgressText.textContent = "What do you wish to conquer?";
+    if (goalStreakCount) goalStreakCount.textContent = "0";
+    if (completionBadge) completionBadge.classList.remove("visible");
+
+    if (startGoalBtn) {
+      startGoalBtn.innerHTML =
+        '<span class="btn-text">Chase Your Goal!</span><i class="fas fa-running btn-icon"></i>';
+      startGoalBtn.disabled = false;
+    }
+
+    if (editGoalBtn) {
+      editGoalBtn.innerHTML = '<i class="fas fa-edit"></i>';
+      editGoalBtn.style.display = "none";
+    }
+
+    return;
+  }
+
+  // Goal exists, update UI
+  goalInput.value = mainGoal.text;
+  goalInput.disabled = !isEditing;
+  goalTimeline.value = mainGoal.totalDays.toString();
+  goalTimeline.disabled = !isEditing;
+
+  // Calculate progress
+  const todayIndex = Math.min(mainGoal.currentDay, mainGoal.totalDays);
+  const percentage = (todayIndex / mainGoal.totalDays) * 100;
+  const percentageFixed = percentage.toFixed(1);
+
+  // Update progress elements
+  if (goalProgressPercent)
+    goalProgressPercent.textContent = `${percentageFixed}%`;
+  if (goalProgressBar) goalProgressBar.style.width = `${percentage}%`;
+  if (goalProgressText) {
+    goalProgressText.textContent = `"${mainGoal.text}" – Day ${todayIndex} of ${mainGoal.totalDays} (${percentageFixed}%)`;
+  }
+  if (goalStreakCount) goalStreakCount.textContent = goalStreak;
+
+  // Update button state
+  const today = new Date().toDateString();
+  const lastUpdated = mainGoal.lastUpdatedDate
+    ? new Date(mainGoal.lastUpdatedDate).toDateString()
+    : null;
+
+  if (lastUpdated === today) {
+    if (startGoalBtn) {
+      startGoalBtn.disabled = true;
+      updateButtonText("completed");
+    }
+  } else {
+    if (startGoalBtn) {
+      startGoalBtn.disabled = false;
+      updateButtonText("active");
+    }
+  }
+
+  // Show trophy if goal completed
+  if (completionBadge) {
+    if (todayIndex >= mainGoal.totalDays) {
+      completionBadge.classList.add("visible");
+      if (goalProgressText) goalProgressText.classList.add("celebrating");
+    } else {
+      completionBadge.classList.remove("visible");
+      if (goalProgressText) goalProgressText.classList.remove("celebrating");
+    }
+  }
+
+  // Show edit button
+  if (editGoalBtn) {
+    editGoalBtn.style.display = "block";
+  }
+}
+
+function updateButtonText(state) {
+  if (!startGoalBtn) return;
+
+  const btnText = startGoalBtn.querySelector(".btn-text");
+  const btnIcon = startGoalBtn.querySelector(".btn-icon");
+
+  if (!btnText || !btnIcon) return;
+
+  switch (state) {
+    case "start":
+      btnText.textContent = "Chase Your Goal!";
+      btnIcon.className = "fas fa-running btn-icon";
+      break;
+    case "active":
+      btnText.textContent = "I showed up today";
+      btnIcon.className = "fas fa-check-circle btn-icon";
+      break;
+    case "completed":
+      btnText.textContent = "Keep it up, champ!";
+      btnIcon.className = "fas fa-trophy btn-icon";
+      break;
+  }
+}
+
+function createConfetti() {
+  const container = document.createElement("div");
+  container.className = "confetti-container";
+  const goalCard = document.querySelector(".goal-tracker-card");
+  if (!goalCard) return;
+
+  goalCard.appendChild(container);
+
+  for (let i = 0; i < 30; i++) {
+    const confetti = document.createElement("div");
+    confetti.className = "confetti";
+    confetti.style.left = `${Math.random() * 100}%`;
+    confetti.style.top = `${Math.random() * 100}%`;
+    confetti.style.backgroundColor = [
+      "#ef4444",
+      "#f59e0b",
+      "#10b981",
+      "#3b82f6",
+      "#8b5cf6",
+    ][Math.floor(Math.random() * 5)];
+    confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+
+    const animation = confetti.animate(
+      [
+        { opacity: 0, transform: "translateY(0) rotate(0deg)" },
+        {
+          opacity: 1,
+          transform: `translateY(${Math.random() * 100}px) rotate(${Math.random() * 360}deg)`,
+        },
+        {
+          opacity: 0,
+          transform: `translateY(${100 + Math.random() * 100}px) rotate(${Math.random() * 720}deg)`,
+        },
+      ],
+      {
+        duration: 1500 + Math.random() * 1000,
+        easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+      },
+    );
+
+    container.appendChild(confetti);
+
+    animation.onfinish = () => {
+      confetti.remove();
+    };
+  }
+
+  setTimeout(() => {
+    if (container.parentNode) {
+      container.remove();
+    }
+  }, 2500);
+}
+
+// Handle edit button click
+function handleEditGoalClick() {
+  if (!mainGoal || !editGoalBtn) return;
+
+  isEditing = !isEditing;
+
+  if (isEditing) {
+    editGoalBtn.innerHTML = '<i class="fas fa-save"></i>';
+    editGoalBtn.title = "Save changes";
+    if (goalInput) goalInput.disabled = false;
+    if (goalTimeline) goalTimeline.disabled = false;
+  } else {
+    editGoalBtn.innerHTML = '<i class="fas fa-edit"></i>';
+    editGoalBtn.title = "Edit goal";
+
+    // Save changes
+    if (goalInput) mainGoal.text = goalInput.value.trim();
+    if (goalTimeline) mainGoal.totalDays = parseInt(goalTimeline.value);
+
+    localStorage.setItem("mainGoal", JSON.stringify(mainGoal));
+    updateGoalUI();
+  }
+}
+
+// Handle start/increment goal button
+function handleGoalButtonClick() {
+  if (!goalInput || !goalTimeline) return;
+
+  if (!mainGoal) {
+    // Starting a new goal
+    const goalText = goalInput.value.trim();
+    const totalDays = parseInt(goalTimeline.value);
+
+    if (!goalText || goalText.length < 3) {
+      showMessage(
+        "Please enter a meaningful goal! (min 3 characters)",
+        "error",
+      );
+      return;
+    }
+
+    if (!totalDays || totalDays < 1) {
+      showMessage("Please select a timeline!", "error");
+      return;
+    }
+
+    mainGoal = {
+      text: goalText,
+      totalDays: totalDays,
+      currentDay: 0,
+      startDate: new Date().toISOString(),
+      lastUpdatedDate: null,
+    };
+
+    // Start streak
+    goalStreak = 1;
+
+    showMessage("Goal set! Let the journey begin! 🚀", "success");
+  } else {
+    // Increment goal for today
+    const today = new Date().toDateString();
+    const lastUpdated = mainGoal.lastUpdatedDate
+      ? new Date(mainGoal.lastUpdatedDate).toDateString()
+      : null;
+
+    if (lastUpdated === today) {
+      showMessage("You already checked in today! Come back tomorrow.", "info");
+      return;
+    }
+
+    // Check if yesterday was also updated for streak
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (lastUpdated === yesterday.toDateString()) {
+      goalStreak += 1;
+    } else {
+      goalStreak = 1; // Streak broken
+    }
+
+    mainGoal.currentDay += 1;
+    mainGoal.lastUpdatedDate = new Date().toISOString();
+
+    // Visual feedback
+    createConfetti();
+    if (startGoalBtn) {
+      startGoalBtn.classList.add("celebrating");
+      setTimeout(() => {
+        startGoalBtn.classList.remove("celebrating");
+      }, 500);
+    }
+
+    // Show motivational messages
+    const messages = [
+      "Amazing work today! 💪",
+      "Consistency is key! 🔑",
+      "One step closer to greatness! 🏆",
+      "You're crushing it! 🚀",
+      "Small steps, big results! 📈",
+    ];
+    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+    showMessage(randomMessage, "success");
+
+    // Update general streak
+    generalStreak += 1;
+    localStorage.setItem("streak", generalStreak.toString());
+    updateStreak();
+
+    // Haptic feedback if available
+    if (navigator.vibrate) {
+      navigator.vibrate([50, 30, 50]);
+    }
+  }
+
+  // Save and update UI
+  localStorage.setItem("mainGoal", JSON.stringify(mainGoal));
+  localStorage.setItem("goalStreak", goalStreak.toString());
+
+  updateGoalUI();
+  updateButtonText("completed");
+}
+
+function showMessage(text, type) {
+  const message = document.createElement("div");
+  message.textContent = text;
+  message.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 1rem 1.5rem;
+    background: ${type === "error" ? "#ef4444" : type === "success" ? "#10b981" : "#3b82f6"};
+    color: white;
+    border-radius: 10px;
+    font-weight: 500;
+    z-index: 9999;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    animation: slideIn 0.3s ease;
+  `;
+
+  document.body.appendChild(message);
+
+  setTimeout(() => {
+    message.style.animation = "slideOut 0.3s ease";
+    setTimeout(() => {
+      if (message.parentNode) {
+        document.body.removeChild(message);
+      }
+    }, 300);
+  }, 3000);
+}
+
+function updateStreak() {
+  if (streakCount) {
+    streakCount.textContent = `${generalStreak} consecutive day${generalStreak !== 1 ? "s" : ""}`;
+  }
+}
+
+// Initialize goal tracker
+function initGoalTracker() {
+  loadGoal();
+  updateGoalUI();
+
+  // Set up event listeners
+  if (editGoalBtn) {
+    editGoalBtn.addEventListener("click", handleEditGoalClick);
+  }
+
+  if (startGoalBtn) {
+    startGoalBtn.addEventListener("click", handleGoalButtonClick);
+  }
+
+  // Add animations to CSS if not already present
+  if (!document.getElementById("goal-animations")) {
+    const style = document.createElement("style");
+    style.id = "goal-animations";
+    style.textContent = `
+      @keyframes slideIn {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+      
+      @keyframes slideOut {
+        from {
+          transform: translateX(0);
+          opacity: 1;
+        }
+        to {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+      }
+      
+      @keyframes firePulse {
+        0%, 100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.2);
+        }
+      }
+      
+      @keyframes trophySpin {
+        0% {
+          transform: rotate(0) scale(0);
+        }
+        50% {
+          transform: rotate(180deg) scale(1.5);
+        }
+        100% {
+          transform: rotate(360deg) scale(1);
+        }
+      }
+      
+      @keyframes celebrate {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.1);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
 }
 
 // Initialize the app
 function initApp() {
-  // Check for reduced motion preference
-  const prefersReducedMotion = window.matchMedia(
-    "(prefers-reduced-motion: reduce)",
-  ).matches;
-
   // Initialize theme
   initTheme();
 
   // Set up theme toggle
-  themeToggle.addEventListener("click", toggleTheme);
-
-  // Initialize sun rays and stars containers
-  sunRays.innerHTML = "";
-  starsContainer.innerHTML = "";
-
-  // Initialize background animations (only if not reduced motion)
-  if (!prefersReducedMotion) {
-    window.particleSystem = new ParticleSystem();
+  if (themeToggle) {
+    themeToggle.addEventListener("click", toggleTheme);
   }
 
-  // Initial date/time update
+  // Initialize goal tracker
+  initGoalTracker();
+
+  // Initial UI updates
+  updateGoalUI();
+  updateStreak();
   updateDateTime();
 
   // Set up interval for updates
   setInterval(updateDateTime, 1000);
 
-  // Service worker registration
+  // Service worker
   if ("serviceWorker" in navigator) {
-    navigator.serviceWorker
-      .register("sw.js")
-      .then((registration) => {
-        console.log(
-          "Service Worker registered with scope:",
-          registration.scope,
-        );
-
-        // Check for updates
-        registration.addEventListener("updatefound", () => {
-          const newWorker = registration.installing;
-          console.log("Service Worker update found!");
-
-          newWorker.addEventListener("statechange", () => {
-            if (
-              newWorker.state === "installed" &&
-              navigator.serviceWorker.controller
-            ) {
-              console.log("New content is available; please refresh.");
-              // You could show a notification here
-            }
-          });
-        });
-      })
-      .catch((error) => {
-        console.log("Service Worker registration failed:", error);
-      });
+    navigator.serviceWorker.register("sw.js").catch(console.error);
   }
-
-  // Handle offline/online status
-  window.addEventListener("online", () => {
-    console.log("App is online");
-    document.body.classList.remove("offline");
-  });
-
-  window.addEventListener("offline", () => {
-    console.log("App is offline");
-    document.body.classList.add("offline");
-  });
-
-  // Check initial connection status
-  if (!navigator.onLine) {
-    document.body.classList.add("offline");
-  }
-
-  // Handle visibility changes
-  document.addEventListener("visibilitychange", () => {
-    if (!document.hidden) {
-      // Refresh time when tab becomes visible
-      updateDateTime();
-    }
-  });
 }
 
-// Start the app when DOM is loaded
+// Start the app
 document.addEventListener("DOMContentLoaded", initApp);
-
-// Handle page unloading
-window.addEventListener("beforeunload", () => {
-  if (window.particleSystem) {
-    window.particleSystem.destroy();
-  }
-});

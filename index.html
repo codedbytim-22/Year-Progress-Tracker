@@ -33,13 +33,13 @@
         <i class="fas fa-moon moon-icon"></i>
       </button>
     </div>
-
     <div class="container">
       <header class="header">
         <h1 class="title">Dayly</h1>
         <p class="subtitle">
           Visualize the passage of time with precision and elegance
         </p>
+        <p class="greeting-text" id="greetingText">Hello!</p>
       </header>
 
       <div class="datetime-container">
@@ -49,10 +49,13 @@
             Tuesday, January 21, 2026
           </div>
         </div>
-
         <div class="datetime-card">
           <div class="card-label">Current Time</div>
           <div class="time-display" id="timeDisplay">14:23:45</div>
+        </div>
+        <div class="datetime-card">
+          <div class="card-label">Week Number</div>
+          <div class="week-display" id="weekDisplay">1</div>
         </div>
       </div>
 
@@ -61,40 +64,47 @@
           <h2 class="progress-title">Year Progress</h2>
           <div class="progress-percent" id="percentText">0.00%</div>
         </div>
-
         <div class="progress-bar-container">
           <div class="progress-bar" id="progressBar"></div>
         </div>
-
+        <!-- FIXED: Change to percentTextInline -->
         <div class="progress-text" id="progressText">
           <span id="yearText">2026</span> is
           <span id="percentTextInline">0.00%</span> complete
         </div>
-
         <div class="progress-stats">
           <div class="stat">
             <div class="stat-value" id="daysPassed">0</div>
             <div class="stat-label">Days Passed</div>
           </div>
-
           <div class="stat">
             <div class="stat-value" id="daysRemaining">365</div>
             <div class="stat-label">Days Remaining</div>
           </div>
-
           <div class="stat">
             <div class="stat-value" id="totalDays">365</div>
             <div class="stat-label">Total Days</div>
           </div>
         </div>
+
+        <!-- Month Progress -->
+        <div class="month-progress-container">
+          <div class="progress-header">
+            <h2 class="progress-title">Month Progress</h2>
+            <div class="progress-percent" id="monthPercentText">0.00%</div>
+          </div>
+          <div class="progress-bar-container">
+            <div class="progress-bar" id="monthProgressBar"></div>
+          </div>
+          <!-- ADDED: Month progress text -->
+          <div class="progress-text">
+            <span id="monthNameText">January</span> is
+            <span id="monthPercentInline">0.00%</span> complete
+          </div>
+        </div>
       </main>
 
-      <footer class="footer">
-        <p>
-          Dayly • Amilli labs |
-          <span id="currentYear">2026</span>
-        </p>
-      </footer>
+      <!-- Goal Tracker Card -->
     </div>
 
     <script src="scripts.js"></script>

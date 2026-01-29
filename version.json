@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0",
-  "build": "20240103",
-  "assets": ["index.html", "styles.css", "script.js", "sw.js"]
+  "version": "1.1.1",
+  "build": "20260128",
+  "assets": ["index.html", "styles.css", "scripts.js", "sw.js", "manifest.json"]
 }
